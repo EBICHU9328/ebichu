@@ -10,15 +10,12 @@
       --page-text-main: #e5e7eb;
       --page-text-sub: #9ca3af;
       --accent: #3b82f6;
-
       --card-bg: #020617;
       --card-bg-hover: #111827;
       --card-border: #1f2937;
       --card-radius: 18px;
-
       --badge-bg: rgba(37, 99, 235, 0.18);
       --badge-border: rgba(59, 130, 246, 0.8);
-
       --shadow-main: 0 14px 30px rgba(0, 0, 0, 0.55);
       --shadow-hover: 0 18px 40px rgba(37, 99, 235, 0.65);
     }
@@ -89,11 +86,7 @@
       color: var(--page-text-sub);
       font-size: 12px;
       cursor: pointer;
-      transition:
-        background 0.16s ease,
-        border-color 0.16s ease,
-        color 0.16s ease,
-        transform 0.08s ease;
+      transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.08s ease;
     }
 
     .tab-btn:hover {
@@ -156,11 +149,14 @@
     .grid-header {
       display: flex;
       justify-content: flex-start;
+      gap: 8px;
       margin-top: 4px;
       margin-bottom: 8px;
+      flex-wrap: wrap;
     }
 
-    .add-card-btn {
+    .add-card-btn,
+    .config-btn {
       padding: 6px 12px;
       border-radius: 999px;
       border: 1px solid var(--card-border);
@@ -188,11 +184,7 @@
       text-decoration: none;
       color: var(--page-text-main);
       box-shadow: var(--shadow-main);
-      transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease,
-        background 0.16s ease,
-        border-color 0.16s ease;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
     }
 
     .card:hover {
@@ -399,17 +391,13 @@
       .header-right {
         align-self: flex-end;
       }
-    }
 
-    
-    @media (max-width: 768px) {
       .grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 480px) {
-
       .page {
         padding: 16px 12px 24px;
       }
@@ -421,6 +409,10 @@
       .card {
         padding: 14px 12px 12px;
       }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -428,13 +420,13 @@
   <div class="page">
     <header>
       <div class="header-left">
-        <div class="title">에비츄의 링크나라</div>
-        <div class="subtitle">간편하게 원하는 사이트로 바로 이동</div>
+        <div class="title">내 링크 모음</div>
+        <div class="subtitle">큰 박스 버튼 눌러서 원하는 사이트로 바로 이동</div>
       </div>
       <div class="header-center">
-        <button class="tab-btn" data-game="game1">뱀피르</button>
-        <button class="tab-btn" data-game="game2">임시</button>
-        <button class="tab-btn" data-game="game3">임시</button>
+        <button class="tab-btn" data-game="game1">게임 1</button>
+        <button class="tab-btn" data-game="game2">게임 2</button>
+        <button class="tab-btn" data-game="game3">게임 3</button>
       </div>
       <div class="header-right">
         <button class="edit-toggle" id="editToggle" hidden>편집 모드 꺼짐</button>
@@ -448,6 +440,8 @@
     <main>
       <div class="grid-header">
         <button class="add-card-btn" id="addCardBtn" hidden>네모칸 추가</button>
+        <button class="config-btn" id="exportBtn" hidden>설정 내보내기</button>
+        <button class="config-btn" id="importBtn" hidden>설정 가져오기</button>
       </div>
       <div class="grid" id="cardGrid"></div>
     </main>
@@ -526,6 +520,24 @@
     </div>
   </div>
 
+  <div class="overlay hidden" id="configOverlay">
+    <div class="overlay-box">
+      <div class="overlay-title" id="configTitle">설정 내보내기</div>
+      <div class="overlay-field">
+        <label for="configText">설정 JSON</label>
+        <textarea id="configText" rows="8"></textarea>
+      </div>
+      <div class="overlay-actions">
+        <button type="button" id="configCancel">닫기</button>
+        <button type="button" id="configApply" class="primary">적용</button>
+      </div>
+      <p class="overlay-hint">
+        내보내기: 내용을 복사해서 index.html 안에 붙여넣어 공용 기본값으로 만들 수 있습니다.
+        가져오기: 다른 곳에서 복사한 JSON을 붙여넣고 적용을 누르면 이 브라우저에 반영됩니다.
+      </p>
+    </div>
+  </div>
+
   <script>
     const LOGIN_USERNAME = "tjdals9328";
     const LOGIN_PASSWORD_HASH = "f63326357e49c8c139d5fb08bab4b34f488e3c1845e603f23023ea3672a9a5f8";
@@ -580,8 +592,7 @@
       });
     }
 
-let cards = JSON_HERE;
-{
+    let cards = {
   "game1": [
     {
       "id": "c1763717017929",
@@ -706,7 +717,7 @@ let cards = JSON_HERE;
   ],
   "game2": [],
   "game3": []
-}
+};
 
     try {
       var savedRaw = localStorage.getItem(STORAGE_KEY);
@@ -725,6 +736,7 @@ let cards = JSON_HERE;
     let editMode = false;
     let editingIndex = null;
     let editingIsNew = false;
+    let configMode = null;
 
     const gridEl = document.getElementById("cardGrid");
     const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-btn"));
@@ -732,6 +744,9 @@ let cards = JSON_HERE;
     const userLabel = document.getElementById("userLabel");
     const editToggle = document.getElementById("editToggle");
     const addCardBtn = document.getElementById("addCardBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+
     const loginOverlay = document.getElementById("loginOverlay");
     const loginForm = document.getElementById("loginForm");
     const loginIdInput = document.getElementById("loginId");
@@ -751,6 +766,12 @@ let cards = JSON_HERE;
     const cardDeleteBtn = document.getElementById("cardDeleteBtn");
     const cardMoveUpBtn = document.getElementById("cardMoveUp");
     const cardMoveDownBtn = document.getElementById("cardMoveDown");
+
+    const configOverlay = document.getElementById("configOverlay");
+    const configTitle = document.getElementById("configTitle");
+    const configText = document.getElementById("configText");
+    const configCancel = document.getElementById("configCancel");
+    const configApply = document.getElementById("configApply");
 
     document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -848,6 +869,7 @@ let cards = JSON_HERE;
         editToggle.classList.remove("on");
         editToggle.textContent = "편집 모드 꺼짐";
         cardOverlay.classList.add("hidden");
+        configOverlay.classList.add("hidden");
       }
       updateEditUI();
     });
@@ -872,7 +894,10 @@ let cards = JSON_HERE;
     }
 
     function updateEditUI() {
-      addCardBtn.hidden = !(isLoggedIn && editMode);
+      var show = isLoggedIn && editMode;
+      addCardBtn.hidden = !show;
+      exportBtn.hidden = !show;
+      importBtn.hidden = !show;
     }
 
     function saveCards() {
@@ -993,6 +1018,62 @@ let cards = JSON_HERE;
     cardMoveDownBtn.addEventListener("click", function (e) {
       e.preventDefault();
       moveEditingCard(1);
+    });
+
+    function openConfigOverlay(mode) {
+      if (!isLoggedIn || !editMode) return;
+      configMode = mode;
+      if (mode === "export") {
+        configTitle.textContent = "설정 내보내기";
+        configText.value = JSON.stringify(cards, null, 2);
+        configApply.style.display = "none";
+      } else {
+        configTitle.textContent = "설정 가져오기";
+        configText.value = "";
+        configApply.style.display = "inline-block";
+      }
+      configOverlay.classList.remove("hidden");
+    }
+
+    exportBtn.addEventListener("click", function () {
+      openConfigOverlay("export");
+    });
+
+    importBtn.addEventListener("click", function () {
+      openConfigOverlay("import");
+    });
+
+    configCancel.addEventListener("click", function () {
+      configOverlay.classList.add("hidden");
+    });
+
+    configApply.addEventListener("click", function () {
+      if (configMode !== "import") return;
+      var text = configText.value.trim();
+      if (!text) {
+        alert("JSON을 붙여넣어 주세요.");
+        return;
+      }
+      try {
+        var parsed = JSON.parse(text);
+        var newCards = { game1: [], game2: [], game3: [] };
+        if (Array.isArray(parsed)) {
+          newCards[currentGame] = parsed;
+        } else {
+          ["game1", "game2", "game3"].forEach(function (key) {
+            if (parsed[key] && Array.isArray(parsed[key])) {
+              newCards[key] = parsed[key];
+            }
+          });
+        }
+        cards = newCards;
+        saveCards();
+        configOverlay.classList.add("hidden");
+        renderCards();
+        alert("설정을 적용했습니다.");
+      } catch (e) {
+        alert("JSON 형식이 잘못되었습니다.");
+      }
     });
 
     function renderCards() {
