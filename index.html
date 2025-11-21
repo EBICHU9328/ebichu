@@ -514,7 +514,7 @@
           <button type="submit" class="primary">저장</button>
         </div>
         <p class="overlay-hint">
-          이 설정은 이 브라우저에만 저장되며, 다른 사람 PC에서는 자동으로 공유되지 않습니다.
+          이 설정은 이 페이지에서만 임시로 적용됩니다. 공용 기본값으로 쓰려면 '설정 내보내기'로 JSON을 복사해 index.html에 붙여넣어 주세요.
         </p>
       </form>
     </div>
@@ -541,8 +541,6 @@
   <script>
     const LOGIN_USERNAME = "tjdals9328";
     const LOGIN_PASSWORD_HASH = "f63326357e49c8c139d5fb08bab4b34f488e3c1845e603f23023ea3672a9a5f8";
-    const STORAGE_KEY = "linkCardsConfig_v1";
-    const STORAGE_GAME_KEY = "currentGame_v1";
 
     const baseCards = [
       {
@@ -593,155 +591,143 @@
     }
 
     let cards = {
-  "game1": [
-    {
-      "id": "c1763717017929",
-      "title": "[오스카2] 총 관리자",
-      "desc": "총 관리자 오픈프로필입니다.",
-      "url": "https://open.kakao.com/o/sYx1LIdd",
-      "host": "총 관리자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://i.pinimg.com/originals/68/b8/27/68b82791975a6eda5b548c17b94eb9fa.gif"
-    },
+      "game1": [
         {
-      "id": "c1763717017929",
-      "title": "출석체크 사이트",
-      "desc": "출석체크 데이터를 볼수있는 사이트입니다. \n 아이디: vampir \n 비밀번호:qqwwee",
-      "url": "https://open.kakao.com/o/sYx1LIdd",
-      "host": "총 관리자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://i.pinimg.com/originals/68/b8/27/68b82791975a6eda5b548c17b94eb9fa.gif"
-    },
-    {
-      "id": "c1",
-      "title": "길드 시트지",
-      "desc": "길드 시트지로 이동합니다.",
-      "url": "https://docs.google.com/spreadsheets/d/13rsaqA7GHEx4TW1WIokCzoOH6rfQ8hU5sUShMuzEeo0/edit?usp=sharing",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "host": "스프레드시트",
-      "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
-    },
-    {
-      "id": "c3",
-      "title": "전투력 갱신 시트지",
-      "desc": "전투력을 갱신하는 시트지입니다.\n닉네임과 전투력을 매일 갱신해주세요.",
-      "url": "https://docs.google.com/spreadsheets/d/1ERRQHSNRMwwlxGK11aUt_f01nBktH8Nbk0JC_QaurCo/edit?gid=0#gid=0",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "host": "스프레드시트",
-      "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
-    },
-    {
-      "id": "c2",
-      "title": "길드 공지방",
-      "desc": "길드 공지방으로 이동합니다.",
-      "url": "https://open.kakao.com/o/gUIwDdMh",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "host": "카카오톡",
-      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
-    },
-    {
-      "id": "c1763716681097",
-      "title": "길드 입찰방",
-      "desc": "길드 입찰방으로 이동합니다.\n비밀번호는 관리자에게 문의 해주세요.",
-      "url": "https://open.kakao.com/o/gBHKh2Qh",
-      "host": "카카오톡",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
-    },
-    {
-      "id": "c1763717911647",
-      "title": "길드 자유방",
-      "desc": "길드 자유방으로 이동합니다.\n비밀번호는 관리자에게 문의 해주세요.",
-      "url": "https://open.kakao.com/o/gUIwDdMh",
-      "host": "카카오톡",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
-    },
-    {
-      "id": "c1763716895774",
-      "title": "[사신] 에비츄",
-      "desc": "[사신] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
-      "url": "https://open.kakao.com/o/sDuPL2Qh",
-      "host": "사신 담당자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://item.kakaocdn.net/do/7bd2c8ccf26fcaeaaf881d7f54deeb4bf43ad912ad8dd55b04db6a64cddaf76d"
-    },
-    {
-      "id": "c1763717648916",
-      "title": "[사신] 후보",
-      "desc": "[사신] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
-      "url": "https://open.kakao.com/o/saqZnp0h",
-      "host": "사신 담당자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://mblogthumb-phinf.pstatic.net/MjAyMjA1MzBfMjM1/MDAxNjUzOTA0MDY4NDU1.AXbS-5nYAqFkHzems46IFG97RkCRRMtXiN6b9oee-L8g.8gIgRBRabFlq-vUUMCaBIL1kk6rJRqSnMaAvWRUkP2Yg.GIF.jsgmh7695/8DCD9D36-A1A6-4263-9297-4F7CAC22914F.gif?type=w800"
-    },
-    {
-      "id": "c1763717051788",
-      "title": "[축복] 써준",
-      "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
-      "url": "https://open.kakao.com/me/ssjun",
-      "host": "축복 담당자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://i.pinimg.com/originals/31/97/18/319718db6e1661a5359b36d49b5f3bc6.gif"
-    },
-    {
-      "id": "c1763718298548",
-      "title": "[축복] 루떼",
-      "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
-      "url": "https://open.kakao.com/o/syb9BE1h",
-      "host": "축복 담당자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://i.pinimg.com/originals/58/26/fd/5826fdd334fb2ee7a0afd8ff5914f6a0.gif"
-    },
-    {
-      "id": "c1763717969260",
-      "title": "[놀자] 레드불",
-      "desc": "[놀자] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
-      "url": "https://open.kakao.com/o/sZLi1tZh",
-      "host": "놀자 담당자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://i.pinimg.com/originals/65/e1/83/65e183ecdd73b9a72f6cb4d88fbe8751.gif"
-    },
-    {
-      "id": "c1763717774826",
-      "title": "[루비] 출렁핑",
-      "desc": "[루비] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
-      "url": "https://open.kakao.com/o/sDKMyuZh",
-      "host": "루비 담당자",
-      "badge": "새 창으로 열림",
-      "badgeAccent": true,
-      "image": "https://i.pinimg.com/originals/ab/f7/25/abf725e3a7efc85b15dd5cb5dae86461.gif"
-    }
-  ],
-  "game2": [],
-  "game3": []
-};
+          "id": "c1763717017929",
+          "title": "[오스카2] 총 관리자",
+          "desc": "총 관리자 오픈프로필입니다.",
+          "url": "https://open.kakao.com/o/sYx1LIdd",
+          "host": "총 관리자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/68/b8/27/68b82791975a6eda5b548c17b94eb9fa.gif"
+        },
+        {
+          "id": "c1763717017929b",
+          "title": "출석체크 사이트",
+          "desc": "출석체크 데이터를 볼수있는 사이트입니다. \n 아이디: vampir \n 비밀번호:qqwwee",
+          "url": "https://open.kakao.com/o/sYx1LIdd",
+          "host": "총 관리자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/68/b8/27/68b82791975a6eda5b548c17b94eb9fa.gif"
+        },
+        {
+          "id": "c1",
+          "title": "길드 시트지",
+          "desc": "길드 시트지로 이동합니다.",
+          "url": "https://docs.google.com/spreadsheets/d/13rsaqA7GHEx4TW1WIokCzoOH6rfQ8hU5sUShMuzEeo0/edit?usp=sharing",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "스프레드시트",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "c3",
+          "title": "전투력 갱신 시트지",
+          "desc": "전투력을 갱신하는 시트지입니다.\n닉네임과 전투력을 매일 갱신해주세요.",
+          "url": "https://docs.google.com/spreadsheets/d/1ERRQHSNRMwwlxGK11aUt_f01nBktH8Nbk0JC_QaurCo/edit?gid=0#gid=0",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "스프레드시트",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "c2",
+          "title": "길드 공지방",
+          "desc": "길드 공지방으로 이동합니다.",
+          "url": "https://open.kakao.com/o/gUIwDdMh",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "카카오톡",
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "c1763716681097",
+          "title": "길드 입찰방",
+          "desc": "길드 입찰방으로 이동합니다.\n비밀번호는 관리자에게 문의 해주세요.",
+          "url": "https://open.kakao.com/o/gBHKh2Qh",
+          "host": "카카오톡",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "c1763717911647",
+          "title": "길드 자유방",
+          "desc": "길드 자유방으로 이동합니다.\n비밀번호는 관리자에게 문의 해주세요.",
+          "url": "https://open.kakao.com/o/gUIwDdMh",
+          "host": "카카오톡",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "c1763716895774",
+          "title": "[사신] 에비츄",
+          "desc": "[사신] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/sDuPL2Qh",
+          "host": "사신 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://item.kakaocdn.net/do/7bd2c8ccf26fcaeaaf881d7f54deeb4bf43ad912ad8dd55b04db6a64cddaf76d"
+        },
+        {
+          "id": "c1763717648916",
+          "title": "[사신] 후보",
+          "desc": "[사신] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/saqZnp0h",
+          "host": "사신 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://mblogthumb-phinf.pstatic.net/MjAyMjA1MzBfMjM1/MDAxNjUzOTA0MDY4NDU1.AXbS-5nYAqFkHzems46IFG97RkCRRMtXiN6b9oee-L8g.8gIgRBRabFlq-vUUMCaBIL1kk6rJRqSnMaAvWRUkP2Yg.GIF.jsgmh7695/8DCD9D36-A1A6-4263-9297-4F7CAC22914F.gif?type=w800"
+        },
+        {
+          "id": "c1763717051788",
+          "title": "[축복] 써준",
+          "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/me/ssjun",
+          "host": "축복 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/31/97/18/319718db6e1661a5359b36d49b5f3bc6.gif"
+        },
+        {
+          "id": "c1763718298548",
+          "title": "[축복] 루떼",
+          "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/syb9BE1h",
+          "host": "축복 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/58/26/fd/5826fdd334fb2ee7a0afd8ff5914f6a0.gif"
+        },
+        {
+          "id": "c1763717969260",
+          "title": "[놀자] 레드불",
+          "desc": "[놀자] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/sZLi1tZh",
+          "host": "놀자 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/65/e1/83/65e183ecdd73b9a72f6cb4d88fbe8751.gif"
+        },
+        {
+          "id": "c1763717774826",
+          "title": "[루비] 출렁핑",
+          "desc": "[루비] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/sDKMyuZh",
+          "host": "루비 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/ab/f7/25/abf725e3a7efc85b15dd5cb5dae86461.gif"
+        }
+      ],
+      "game2": [],
+      "game3": []
+    };
 
-    try {
-      var savedRaw = localStorage.getItem(STORAGE_KEY);
-      if (savedRaw) {
-        var saved = JSON.parse(savedRaw);
-        ["game1", "game2", "game3"].forEach(function (key) {
-          if (saved[key] && Array.isArray(saved[key])) {
-            cards[key] = saved[key];
-          }
-        });
-      }
-    } catch (e) {}
-
-    let currentGame = localStorage.getItem(STORAGE_GAME_KEY) || "game1";
+    let currentGame = "game1";
     let isLoggedIn = false;
     let editMode = false;
     let editingIndex = null;
@@ -801,7 +787,6 @@
         var gameId = btn.getAttribute("data-game");
         if (!gameId || gameId === currentGame) return;
         currentGame = gameId;
-        localStorage.setItem(STORAGE_GAME_KEY, currentGame);
         setActiveTabFromCurrentGame();
         renderCards();
       });
@@ -911,9 +896,6 @@
     }
 
     function saveCards() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
-      } catch (e) {}
     }
 
     function openCardEditor(index) {
