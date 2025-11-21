@@ -590,7 +590,7 @@
 
     let cards = {
       "game1": [
-              {
+        {
           "id": "c1",
           "title": "길드 시트지",
           "desc": "길드 시트지로 이동합니다.\n 모든 내역을 한번에 확인하세요!",
@@ -610,7 +610,7 @@
           "host": "스프레드시트",
           "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
         },
-       {
+        {
           "id": "c1763717017929b",
           "title": "출석체크 사이트",
           "desc": "출석체크 정보 사이트입니다. \n아이디: vampir 비밀번호: qqwwee",
@@ -640,7 +640,7 @@
           "badgeAccent": true,
           "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
         },
-         {
+        {
           "id": "c1763717911647",
           "title": "길드 자유방",
           "desc": "길드 자유방으로 이동합니다.\n비밀번호는 관리자에게 문의 해주세요.",
@@ -650,8 +650,7 @@
           "badgeAccent": true,
           "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
         },
-  {
-          {
+        {
           "id": "c7974635",
           "title": "디스코드",
           "desc": "디스코드로 이동합니다.",
@@ -661,6 +660,7 @@
           "host": "DISCORD",
           "image": "https://i.namu.wiki/i/1Hiv-mf3x_xkYU1kd6PRSAA9TZycl-A3h-HM--kersQF5fL6_fF2PmO8757fj9CqhXnmcy2lFaQkwToWTxtIHw.webp"
         },
+        {
           "id": "c1763717017929",
           "title": "[총 관리자] 라이엇",
           "desc": "총 관리자 오픈프로필입니다. ",
@@ -793,7 +793,7 @@
     tabButtons.forEach(function (btn) {
       btn.addEventListener("click", function () {
         var gameId = btn.getAttribute("data-game");
-        if (!gameId || gameId === currentGame) return;
+        if (!gameId) return;
         currentGame = gameId;
         setActiveTabFromCurrentGame();
         renderCards();
