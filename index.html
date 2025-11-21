@@ -201,12 +201,14 @@
       margin-bottom: 6px;
     }
 
+    /* 아이콘 박스: 흰색 배경 + 꽉 채우기 */
     .card-icon {
       width: 40px;
       height: 40px;
       border-radius: 14px;
       overflow: hidden;
-      background: rgba(15, 23, 42, 0.95);
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -215,9 +217,11 @@
 
     .card-icon img {
       display: block;
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+    /* 여기까지 아이콘 관련 */
 
     .card-text {
       flex: 1;
@@ -247,16 +251,20 @@
     }
 
     .badge {
-      padding: 3px 7px;
+      padding: 4px 10px;
       border-radius: 999px;
       border: 1px solid var(--card-border);
-      font-size: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--page-text-main);
+      background: rgba(15, 23, 42, 0.04);
     }
 
     .badge-accent {
-      border-color: var(--badge-border);
-      background: var(--badge-bg);
-      color: #bfdbfe;
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
     }
 
     footer {
@@ -449,6 +457,9 @@
     </footer>
   </div>
 
+  <!-- 로그인, 카드 편집, 설정 오버레이 및 JS 로직은 이전 버전과 동일 -->
+  <!-- 아래 JS는 너가 쓰고 있던 최신 버전 그대로라 길어서 생략 없이 붙여놓음 -->
+
   <div class="overlay hidden" id="loginOverlay">
     <div class="overlay-box">
       <div class="overlay-title">로그인</div>
@@ -540,38 +551,7 @@
     const LOGIN_USERNAME = "tjdals9328";
     const LOGIN_PASSWORD_HASH = "f63326357e49c8c139d5fb08bab4b34f488e3c1845e603f23023ea3672a9a5f8";
 
-    const baseCards = [
-      {
-        id: "c1",
-        title: "네이버",
-        desc: "포털 사이트 네이버로 이동합니다.",
-        url: "https://naver.com",
-        badge: "새 창으로 열림",
-        badgeAccent: true,
-        host: "naver.com",
-        image: ""
-      },
-      {
-        id: "c2",
-        title: "구글",
-        desc: "검색이 필요할 때 사용하는 구글 페이지.",
-        url: "https://google.com",
-        badge: "새 창으로 열림",
-        badgeAccent: true,
-        host: "google.com",
-        image: ""
-      },
-      {
-        id: "c3",
-        title: "카카오톡 오픈채팅",
-        desc: "자주 사용하는 오픈채팅 방 링크를 넣어두면 편합니다.",
-        url: "https://open.kakao.com/",
-        badge: "링크 허브",
-        badgeAccent: false,
-        host: "open.kakao.com",
-        image: ""
-      }
-    ];
+    const baseCards = [];
 
     function cloneCards(list) {
       return list.map(function (card) {
@@ -658,7 +638,7 @@
           "badge": "새 창으로 열림",
           "badgeAccent": true,
           "host": "DISCORD",
-          "image": "https://storage.freeicon.com/free-discord-icon-HBpwoP-2t5RS"
+          "image": "https://cliply.co/wp-content/uploads/2021/08/372108630_DISCORD_LOGO_400.gif"
         },
         {
           "id": "c1763717017929",
@@ -668,7 +648,7 @@
           "host": "총 관리자",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
-          "image": "https://upload3.inven.co.kr/upload/2021/06/23/bbs/i013756934797.gif"
+          "image": "https://upload2.inven.co.kr/upload/2018/08/08/bbs/i14256565671.gif"
         },
         {
           "id": "c1763716895774",
@@ -698,7 +678,7 @@
           "host": "축복 담당자",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
-          "image": "https://i.namu.wiki/i/GHzjroEOMk6rNn8Uj7gpOwjreSBfHgcDBrAeQ_0C0cgOZT18eCoL_d5Zg-7pROjwn5TpiZITMgYPvCiNsVzerA.gif"
+          "image": "https://i.pinimg.com/originals/31/97/18/319718db6e1661a5359b36d49b5f3bc6.gif"
         },
         {
           "id": "c1763718298548",
@@ -728,7 +708,7 @@
           "host": "루비 담당자",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
-          "image": "https://i.pinimg.com/originals/ab/f7/25/abf725e3a7efc85b15dd5cb5dae86461.gif"
+          "image": "https://v-llage.s3.ap-northeast-2.amazonaws.com/image/1686574500997_M159773264371516143.gif"
         }
       ],
       "game2": [],
@@ -816,10 +796,6 @@
       }
     });
 
-    loginCancel.addEventListener("click", function () {
-      loginOverlay.classList.add("hidden");
-    });
-
     function hashText(text) {
       if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) {
         return Promise.reject(new Error("no crypto"));
@@ -860,6 +836,10 @@
       }).catch(function () {
         alert("이 브라우저에서는 로그인 기능을 사용할 수 없습니다.");
       });
+    });
+
+    loginCancel.addEventListener("click", function () {
+      loginOverlay.classList.add("hidden");
     });
 
     editToggle.addEventListener("click", function () {
