@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>내 링크 모음</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --page-bg: #020617;
+      --page-text-main: #e5e7eb;
+      --page-text-sub: #9ca3af;
+      --accent: #3b82f6;
+
+      --card-bg: #020617;
+      --card-bg-hover: #111827;
+      --card-border: #1f2937;
+      --card-radius: 18px;
+
+      --badge-bg: rgba(37, 99, 235, 0.18);
+      --badge-border: rgba(59, 130, 246, 0.8);
+
+      --shadow-main: 0 14px 30px rgba(0, 0, 0, 0.55);
+      --shadow-hover: 0 18px 40px rgba(37, 99, 235, 0.65);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--page-bg);
+      color: var(--page-text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      max-width: 960px;
+      width: 100%;
+      padding: 20px 16px 32px;
+    }
+
+    header {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .header-left {
+      min-width: 0;
+    }
+
+    .header-center {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--page-text-sub);
+    }
+
+    .tab-btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--page-text-sub);
+      font-size: 12px;
+      cursor: pointer;
+      transition:
+        background 0.16s ease,
+        border-color 0.16s ease,
+        color 0.16s ease,
+        transform 0.08s ease;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--accent);
+      color: #e5e7eb;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #f9fafb;
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .user-button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--page-text-main);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .user-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #60a5fa, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .user-label {
+      white-space: nowrap;
+    }
+
+    .edit-toggle {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--page-text-sub);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .edit-toggle.on {
+      background: rgba(22, 163, 74, 0.22);
+      border-color: #22c55e;
+      color: #bbf7d0;
+    }
+
+    .grid-header {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .add-card-btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--page-text-main);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border-radius: var(--card-radius);
+      padding: 16px 14px 14px;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+      color: var(--page-text-main);
+      box-shadow: var(--shadow-main);
+      transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        background 0.16s ease,
+        border-color 0.16s ease;
+    }
+
+    .card:hover {
+      background: var(--card-bg-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card-main {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.95);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon img {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .card-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--page-text-sub);
+      margin-bottom: 4px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--page-text-sub);
+    }
+
+    .badge {
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      font-size: 10px;
+    }
+
+    .badge-accent {
+      border-color: var(--badge-border);
+      background: var(--badge-bg);
+      color: #bfdbfe;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 11px;
+      color: var(--page-text-sub);
+      border-top: 1px solid #020617;
+      padding-top: 10px;
+      text-align: right;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.78);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+    }
+
+    .overlay-box {
+      background: #020617;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      padding: 18px 16px 14px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .overlay-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .overlay-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .overlay-field label {
+      font-size: 12px;
+      color: var(--page-text-sub);
+    }
+
+    .overlay-field input,
+    .overlay-field textarea {
+      font-size: 13px;
+      padding: 7px 9px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: #020617;
+      color: var(--page-text-main);
+      outline: none;
+      resize: vertical;
+    }
+
+    .overlay-field input:focus,
+    .overlay-field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.7);
+    }
+
+    .overlay-field-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--page-text-sub);
+    }
+
+    .overlay-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .overlay-actions button {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--page-text-main);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .overlay-actions button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #f9fafb;
+    }
+
+    .overlay-actions button.danger {
+      border-color: #b91c1c;
+      color: #fecaca;
+    }
+
+    .overlay-actions button.mute {
+      font-size: 11px;
+      color: var(--page-text-sub);
+    }
+
+    .overlay-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--page-text-sub);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-center {
+        justify-content: flex-start;
+        order: 2;
+      }
+
+      .header-right {
+        align-self: flex-end;
+      }
+    }
+
+    
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+
+      .page {
+        padding: 16px 12px 24px;
+      }
+
+      .title {
+        font-size: 20px;
+      }
+
+      .card {
+        padding: 14px 12px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="header-left">
+        <div class="title">에비츄의 링크나라</div>
+        <div class="subtitle">간편하게 원하는 사이트로 바로 이동</div>
+      </div>
+      <div class="header-center">
+        <button class="tab-btn" data-game="game1">뱀피르</button>
+        <button class="tab-btn" data-game="game2">임시</button>
+        <button class="tab-btn" data-game="game3">임시</button>
+      </div>
+      <div class="header-right">
+        <button class="edit-toggle" id="editToggle" hidden>편집 모드 꺼짐</button>
+        <button class="user-button" id="userButton">
+          <div class="user-avatar" id="userAvatar"></div>
+          <span class="user-label" id="userLabel">로그인</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="grid-header">
+        <button class="add-card-btn" id="addCardBtn" hidden>네모칸 추가</button>
+      </div>
+      <div class="grid" id="cardGrid"></div>
+    </main>
+
+    <footer>
+      © <span id="year"></span> 내 링크 모음 페이지
+    </footer>
+  </div>
+
+  <div class="overlay hidden" id="loginOverlay">
+    <div class="overlay-box">
+      <div class="overlay-title">로그인</div>
+      <form id="loginForm">
+        <div class="overlay-field">
+          <label for="loginId">아이디</label>
+          <input id="loginId" autocomplete="username">
+        </div>
+        <div class="overlay-field">
+          <label for="loginPw">비밀번호</label>
+          <input id="loginPw" type="password" autocomplete="current-password">
+        </div>
+        <div class="overlay-actions">
+          <button type="button" id="loginCancel" class="mute">취소</button>
+          <button type="submit" class="primary">로그인</button>
+        </div>
+        <p class="overlay-hint">
+          이 로그인은 이 페이지 안에서만 사용되며, 입력한 정보는 서버로 전송되지 않습니다.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="cardOverlay">
+    <div class="overlay-box">
+      <div class="overlay-title">아이콘 설정</div>
+      <form id="cardForm">
+        <div class="overlay-field">
+          <label for="cardTitle">제목</label>
+          <input id="cardTitle">
+        </div>
+        <div class="overlay-field">
+          <label for="cardDesc">설명</label>
+          <textarea id="cardDesc" rows="3"></textarea>
+        </div>
+        <div class="overlay-field">
+          <label for="cardUrl">링크(URL)</label>
+          <input id="cardUrl" placeholder="https://...">
+        </div>
+        <div class="overlay-field">
+          <label for="cardHost">오른쪽 아래 표시 텍스트</label>
+          <input id="cardHost" placeholder="예: naver.com">
+        </div>
+        <div class="overlay-field">
+          <label for="cardBadge">뱃지 텍스트</label>
+          <input id="cardBadge" placeholder="예: 새 창으로 열림">
+        </div>
+        <div class="overlay-field-inline">
+          <input type="checkbox" id="cardBadgeAccent">
+          <label for="cardBadgeAccent">뱃지를 강조 색으로 표시</label>
+        </div>
+        <div class="overlay-field">
+          <label for="cardImage">아이콘 이미지 URL (선택)</label>
+          <input id="cardImage" placeholder="카카오톡 이모티콘 이미지 주소 등">
+        </div>
+        <div class="overlay-actions">
+          <button type="button" id="cardDeleteBtn" class="danger">삭제</button>
+          <button type="button" id="cardMoveUp" class="mute">위로</button>
+          <button type="button" id="cardMoveDown" class="mute">아래로</button>
+          <button type="button" id="cardCancel">닫기</button>
+          <button type="submit" class="primary">저장</button>
+        </div>
+        <p class="overlay-hint">
+          이 설정은 이 브라우저에만 저장되며, 다른 사람 PC에서는 자동으로 공유되지 않습니다.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const LOGIN_USERNAME = "tjdals9328";
+    const LOGIN_PASSWORD_HASH = "f63326357e49c8c139d5fb08bab4b34f488e3c1845e603f23023ea3672a9a5f8";
+    const STORAGE_KEY = "linkCardsConfig_v1";
+    const STORAGE_GAME_KEY = "currentGame_v1";
+
+    const baseCards = [
+      {
+        id: "c1",
+        title: "네이버",
+        desc: "포털 사이트 네이버로 이동합니다.",
+        url: "https://naver.com",
+        badge: "새 창으로 열림",
+        badgeAccent: true,
+        host: "naver.com",
+        image: ""
+      },
+      {
+        id: "c2",
+        title: "구글",
+        desc: "검색이 필요할 때 사용하는 구글 페이지.",
+        url: "https://google.com",
+        badge: "새 창으로 열림",
+        badgeAccent: true,
+        host: "google.com",
+        image: ""
+      },
+      {
+        id: "c3",
+        title: "카카오톡 오픈채팅",
+        desc: "자주 사용하는 오픈채팅 방 링크를 넣어두면 편합니다.",
+        url: "https://open.kakao.com/",
+        badge: "링크 허브",
+        badgeAccent: false,
+        host: "open.kakao.com",
+        image: ""
+      }
+    ];
+
+    function cloneCards(list) {
+      return list.map(function (card) {
+        return {
+          id: card.id,
+          title: card.title,
+          desc: card.desc,
+          url: card.url,
+          badge: card.badge,
+          badgeAccent: card.badgeAccent,
+          host: card.host,
+          image: card.image
+        };
+      });
+    }
+
+    let cards = {
+      game1: cloneCards(baseCards),
+      game2: cloneCards(baseCards),
+      game3: cloneCards(baseCards)
+    };
+
+    try {
+      var savedRaw = localStorage.getItem(STORAGE_KEY);
+      if (savedRaw) {
+        var saved = JSON.parse(savedRaw);
+        ["game1", "game2", "game3"].forEach(function (key) {
+          if (saved[key] && Array.isArray(saved[key])) {
+            cards[key] = saved[key];
+          }
+        });
+      }
+    } catch (e) {}
+
+    let currentGame = localStorage.getItem(STORAGE_GAME_KEY) || "game1";
+    let isLoggedIn = false;
+    let editMode = false;
+    let editingIndex = null;
+    let editingIsNew = false;
+
+    const gridEl = document.getElementById("cardGrid");
+    const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-btn"));
+    const userButton = document.getElementById("userButton");
+    const userLabel = document.getElementById("userLabel");
+    const editToggle = document.getElementById("editToggle");
+    const addCardBtn = document.getElementById("addCardBtn");
+    const loginOverlay = document.getElementById("loginOverlay");
+    const loginForm = document.getElementById("loginForm");
+    const loginIdInput = document.getElementById("loginId");
+    const loginPwInput = document.getElementById("loginPw");
+    const loginCancel = document.getElementById("loginCancel");
+
+    const cardOverlay = document.getElementById("cardOverlay");
+    const cardForm = document.getElementById("cardForm");
+    const cardTitleInput = document.getElementById("cardTitle");
+    const cardDescInput = document.getElementById("cardDesc");
+    const cardUrlInput = document.getElementById("cardUrl");
+    const cardHostInput = document.getElementById("cardHost");
+    const cardBadgeInput = document.getElementById("cardBadge");
+    const cardBadgeAccentInput = document.getElementById("cardBadgeAccent");
+    const cardImageInput = document.getElementById("cardImage");
+    const cardCancelBtn = document.getElementById("cardCancel");
+    const cardDeleteBtn = document.getElementById("cardDeleteBtn");
+    const cardMoveUpBtn = document.getElementById("cardMoveUp");
+    const cardMoveDownBtn = document.getElementById("cardMoveDown");
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    function setActiveTabFromCurrentGame() {
+      tabButtons.forEach(function (btn) {
+        var game = btn.getAttribute("data-game");
+        if (game === currentGame) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+    }
+
+    tabButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var gameId = btn.getAttribute("data-game");
+        if (!gameId || gameId === currentGame) return;
+        currentGame = gameId;
+        localStorage.setItem(STORAGE_GAME_KEY, currentGame);
+        setActiveTabFromCurrentGame();
+        renderCards();
+      });
+    });
+
+    userButton.addEventListener("click", function () {
+      if (isLoggedIn) {
+        if (confirm("로그아웃 하시겠습니까?")) {
+          isLoggedIn = false;
+          editMode = false;
+          updateLoginUI();
+          updateEditUI();
+        }
+      } else {
+        loginOverlay.classList.remove("hidden");
+        loginIdInput.value = "";
+        loginPwInput.value = "";
+        loginIdInput.focus();
+      }
+    });
+
+    loginCancel.addEventListener("click", function () {
+      loginOverlay.classList.add("hidden");
+    });
+
+    function hashText(text) {
+      if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) {
+        return Promise.reject(new Error("no crypto"));
+      }
+      var encoder = new TextEncoder();
+      var data = encoder.encode(text);
+      return window.crypto.subtle.digest("SHA-256", data).then(function (buf) {
+        var arr = Array.from(new Uint8Array(buf));
+        return arr.map(function (b) {
+          return b.toString(16).padStart(2, "0");
+        }).join("");
+      });
+    }
+
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var id = loginIdInput.value.trim();
+      var pw = loginPwInput.value;
+      if (!id || !pw) {
+        alert("아이디와 비밀번호를 모두 입력하세요.");
+        return;
+      }
+      if (id !== LOGIN_USERNAME) {
+        alert("아이디 또는 비밀번호가 잘못되었습니다.");
+        return;
+      }
+      hashText(pw).then(function (hash) {
+        if (hash === LOGIN_PASSWORD_HASH) {
+          isLoggedIn = true;
+          loginOverlay.classList.add("hidden");
+          loginPwInput.value = "";
+          updateLoginUI();
+          updateEditUI();
+          alert("로그인되었습니다. '편집 모드'를 켜면 아이콘을 수정하거나 추가할 수 있습니다.");
+        } else {
+          alert("아이디 또는 비밀번호가 잘못되었습니다.");
+        }
+      }).catch(function () {
+        alert("이 브라우저에서는 로그인 기능을 사용할 수 없습니다.");
+      });
+    });
+
+    editToggle.addEventListener("click", function () {
+      if (!isLoggedIn) return;
+      editMode = !editMode;
+      if (editMode) {
+        editToggle.classList.add("on");
+        editToggle.textContent = "편집 모드 켜짐";
+      } else {
+        editToggle.classList.remove("on");
+        editToggle.textContent = "편집 모드 꺼짐";
+        cardOverlay.classList.add("hidden");
+      }
+      updateEditUI();
+    });
+
+    function updateLoginUI() {
+      if (isLoggedIn) {
+        userLabel.textContent = LOGIN_USERNAME;
+        editToggle.hidden = false;
+        if (editMode) {
+          editToggle.classList.add("on");
+          editToggle.textContent = "편집 모드 켜짐";
+        } else {
+          editToggle.classList.remove("on");
+          editToggle.textContent = "편집 모드 꺼짐";
+        }
+      } else {
+        userLabel.textContent = "로그인";
+        editToggle.hidden = true;
+        editMode = false;
+      }
+      updateEditUI();
+    }
+
+    function updateEditUI() {
+      addCardBtn.hidden = !(isLoggedIn && editMode);
+    }
+
+    function saveCards() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+      } catch (e) {}
+    }
+
+    function openCardEditor(index) {
+      var list = cards[currentGame] || (cards[currentGame] = []);
+      if (typeof index === "number" && list[index]) {
+        editingIndex = index;
+        editingIsNew = false;
+      } else {
+        editingIndex = null;
+        editingIsNew = true;
+      }
+      var card;
+      if (!editingIsNew && list[editingIndex]) {
+        card = list[editingIndex];
+      } else {
+        card = {
+          id: "c" + Date.now(),
+          title: "",
+          desc: "",
+          url: "",
+          host: "",
+          badge: "",
+          badgeAccent: true,
+          image: ""
+        };
+      }
+      cardTitleInput.value = card.title || "";
+      cardDescInput.value = card.desc || "";
+      cardUrlInput.value = card.url || "";
+      cardHostInput.value = card.host || "";
+      cardBadgeInput.value = card.badge || "";
+      cardBadgeAccentInput.checked = !!card.badgeAccent;
+      cardImageInput.value = card.image || "";
+      if (editingIsNew) {
+        cardDeleteBtn.hidden = true;
+        cardMoveUpBtn.disabled = true;
+        cardMoveDownBtn.disabled = true;
+      } else {
+        cardDeleteBtn.hidden = false;
+        cardMoveUpBtn.disabled = false;
+        cardMoveDownBtn.disabled = false;
+      }
+      cardOverlay.classList.remove("hidden");
+    }
+
+    addCardBtn.addEventListener("click", function () {
+      if (!isLoggedIn || !editMode) return;
+      openCardEditor(null);
+    });
+
+    cardCancelBtn.addEventListener("click", function () {
+      cardOverlay.classList.add("hidden");
+    });
+
+    cardForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var list = cards[currentGame] || (cards[currentGame] = []);
+      var card;
+      if (!editingIsNew && typeof editingIndex === "number" && list[editingIndex]) {
+        card = list[editingIndex];
+      } else {
+        card = { id: "c" + Date.now() };
+        editingIsNew = true;
+      }
+      card.title = cardTitleInput.value.trim();
+      card.desc = cardDescInput.value.trim();
+      card.url = cardUrlInput.value.trim();
+      card.host = cardHostInput.value.trim();
+      card.badge = cardBadgeInput.value.trim();
+      card.badgeAccent = !!cardBadgeAccentInput.checked;
+      card.image = cardImageInput.value.trim();
+      if (editingIsNew) {
+        list.push(card);
+      } else {
+        list[editingIndex] = card;
+      }
+      saveCards();
+      cardOverlay.classList.add("hidden");
+      renderCards();
+    });
+
+    cardDeleteBtn.addEventListener("click", function () {
+      if (editingIsNew) return;
+      var list = cards[currentGame] || [];
+      if (typeof editingIndex !== "number" || !list[editingIndex]) return;
+      if (!confirm("이 아이콘을 삭제할까요?")) return;
+      list.splice(editingIndex, 1);
+      saveCards();
+      cardOverlay.classList.add("hidden");
+      renderCards();
+    });
+
+    function moveEditingCard(offset) {
+      if (editingIsNew) return;
+      var list = cards[currentGame] || [];
+      if (typeof editingIndex !== "number" || !list[editingIndex]) return;
+      var newIndex = editingIndex + offset;
+      if (newIndex < 0 || newIndex >= list.length) return;
+      var temp = list[editingIndex];
+      list[editingIndex] = list[newIndex];
+      list[newIndex] = temp;
+      editingIndex = newIndex;
+      saveCards();
+      renderCards();
+    }
+
+    cardMoveUpBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      moveEditingCard(-1);
+    });
+
+    cardMoveDownBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      moveEditingCard(1);
+    });
+
+    function renderCards() {
+      gridEl.innerHTML = "";
+      var list = cards[currentGame] || [];
+      list.forEach(function (card, index) {
+        var a = document.createElement("a");
+        a.className = "card";
+        a.href = card.url || "#";
+        a.target = "_blank";
+        a.rel = "noopener";
+
+        var main = document.createElement("div");
+        main.className = "card-main";
+
+        if (card.image) {
+          var icon = document.createElement("div");
+          icon.className = "card-icon";
+          var img = document.createElement("img");
+          img.src = card.image;
+          icon.appendChild(img);
+          main.appendChild(icon);
+        }
+
+        var textWrap = document.createElement("div");
+        textWrap.className = "card-text";
+
+        var titleEl = document.createElement("div");
+        titleEl.className = "card-title";
+        titleEl.textContent = card.title || "";
+
+        var descEl = document.createElement("div");
+        descEl.className = "card-desc";
+        descEl.textContent = card.desc || "";
+
+        textWrap.appendChild(titleEl);
+        textWrap.appendChild(descEl);
+        main.appendChild(textWrap);
+
+        var meta = document.createElement("div");
+        meta.className = "card-meta";
+
+        var badgeEl = document.createElement("div");
+        badgeEl.className = "badge" + (card.badgeAccent ? " badge-accent" : "");
+        badgeEl.textContent = card.badge || "";
+
+        var hostEl = document.createElement("div");
+        hostEl.textContent = card.host || "";
+
+        meta.appendChild(badgeEl);
+        meta.appendChild(hostEl);
+
+        a.appendChild(main);
+        a.appendChild(meta);
+
+        a.addEventListener("click", function (e) {
+          if (editMode && isLoggedIn) {
+            e.preventDefault();
+            openCardEditor(index);
+          }
+        });
+
+        gridEl.appendChild(a);
+      });
+    }
+
+    setActiveTabFromCurrentGame();
+    updateLoginUI();
+    renderCards();
+  </script>
+</body>
+</html>
