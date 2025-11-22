@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>𝓥𝓐𝓜𝓟𝓘𝓡</title>
+  <title>𝓥𝓐𝓜𝓟𝓘𝓡 - 폴더</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
@@ -14,17 +14,11 @@
       --card-bg-hover: #e0ebff;
       --card-border: #d1d5db;
       --card-radius: 18px;
-      --badge-bg: rgba(37, 99, 235, 0.10);
-      --badge-border: rgba(37, 99, 235, 0.85);
       --shadow-main: 0 12px 32px rgba(15, 23, 42, 0.16);
       --shadow-hover: 0 18px 44px rgba(37, 99, 235, 0.40);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -49,17 +43,13 @@
       gap: 16px;
     }
 
-    .header-left {
-      min-width: 0;
-    }
-
+    .header-left { min-width: 0; }
     .header-center {
       display: flex;
       gap: 8px;
       justify-content: center;
       flex: 1;
     }
-
     .header-right {
       display: flex;
       align-items: center;
@@ -72,11 +62,7 @@
       letter-spacing: -0.02em;
       margin-bottom: 4px;
     }
-
-    .subtitle {
-      font-size: 13px;
-      color: var(--page-text-sub);
-    }
+    .subtitle { font-size: 13px; color: var(--page-text-sub); }
 
     .tab-btn {
       padding: 6px 12px;
@@ -88,12 +74,7 @@
       cursor: pointer;
       transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.08s ease;
     }
-
-    .tab-btn:hover {
-      border-color: var(--accent);
-      color: #e5e7eb;
-    }
-
+    .tab-btn:hover { border-color: var(--accent); color: #e5e7eb; }
     .tab-btn.active {
       background: var(--accent);
       border-color: var(--accent);
@@ -114,7 +95,6 @@
       font-size: 12px;
       cursor: pointer;
     }
-
     .user-avatar {
       width: 24px;
       height: 24px;
@@ -125,10 +105,7 @@
       justify-content: center;
       font-size: 13px;
     }
-
-    .user-label {
-      white-space: nowrap;
-    }
+    .user-label { white-space: nowrap; }
 
     .edit-toggle {
       padding: 5px 10px;
@@ -139,7 +116,6 @@
       font-size: 11px;
       cursor: pointer;
     }
-
     .edit-toggle.on {
       background: rgba(22, 163, 74, 0.22);
       border-color: #22c55e;
@@ -154,7 +130,6 @@
       margin-bottom: 8px;
       flex-wrap: wrap;
     }
-
     .add-card-btn,
     .config-btn {
       padding: 6px 12px;
@@ -166,8 +141,52 @@
       cursor: pointer;
     }
 
+    .folder {
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(248, 250, 252, 0.85);
+      margin-top: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+    }
+    .folder-header {
+      width: 100%;
+      border: none;
+      outline: none;
+      padding: 10px 14px;
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.1), rgba(129, 140, 248, 0.12));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .folder-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .folder-title span {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+    }
+    .folder-toggle {
+      font-size: 11px;
+      color: #1d4ed8;
+    }
+    .folder-body {
+      padding: 10px 10px 12px;
+      border-top: 1px solid rgba(148, 163, 184, 0.4);
+    }
+    .folder-body.collapsed { display: none; }
+
     .grid {
-      margin-top: 8px;
+      margin-top: 4px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
@@ -186,7 +205,6 @@
       box-shadow: var(--shadow-main);
       transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
     }
-
     .card:hover {
       background: var(--card-bg-hover);
       border-color: var(--accent);
@@ -200,8 +218,6 @@
       align-items: flex-start;
       margin-bottom: 6px;
     }
-
-    /* 아이콘 박스: 흰색 배경 + 꽉 채우기 */
     .card-icon {
       width: 40px;
       height: 40px;
@@ -214,26 +230,21 @@
       align-items: center;
       justify-content: center;
     }
-
     .card-icon img {
       display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    /* 여기까지 아이콘 관련 */
-
     .card-text {
       flex: 1;
       min-width: 0;
     }
-
     .card-title {
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 6px;
     }
-
     .card-desc {
       font-size: 13px;
       color: var(--page-text-sub);
@@ -241,7 +252,6 @@
       line-height: 1.45;
       white-space: pre-wrap;
     }
-
     .card-meta {
       display: flex;
       justify-content: space-between;
@@ -249,7 +259,6 @@
       font-size: 12px;
       color: var(--page-text-sub);
     }
-
     .badge {
       padding: 4px 10px;
       border-radius: 999px;
@@ -259,7 +268,6 @@
       color: var(--page-text-main);
       background: rgba(15, 23, 42, 0.04);
     }
-
     .badge-accent {
       border-color: var(--accent);
       background: var(--accent);
@@ -285,7 +293,6 @@
       justify-content: center;
       z-index: 40;
     }
-
     .overlay-box {
       background: #020617;
       border-radius: 16px;
@@ -295,25 +302,21 @@
       max-width: 340px;
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
     }
-
     .overlay-title {
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 10px;
     }
-
     .overlay-field {
       display: flex;
       flex-direction: column;
       gap: 4px;
       margin-bottom: 8px;
     }
-
     .overlay-field label {
       font-size: 12px;
       color: var(--page-text-sub);
     }
-
     .overlay-field input,
     .overlay-field textarea {
       font-size: 13px;
@@ -325,13 +328,11 @@
       outline: none;
       resize: vertical;
     }
-
     .overlay-field input:focus,
     .overlay-field textarea:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.7);
     }
-
     .overlay-field-inline {
       display: flex;
       align-items: center;
@@ -340,7 +341,6 @@
       font-size: 12px;
       color: var(--page-text-sub);
     }
-
     .overlay-actions {
       display: flex;
       justify-content: flex-end;
@@ -348,7 +348,6 @@
       margin-top: 6px;
       flex-wrap: wrap;
     }
-
     .overlay-actions button {
       padding: 6px 10px;
       border-radius: 999px;
@@ -358,69 +357,44 @@
       font-size: 12px;
       cursor: pointer;
     }
-
     .overlay-actions button.primary {
       border-color: var(--accent);
       background: var(--accent);
       color: #f9fafb;
     }
-
     .overlay-actions button.danger {
       border-color: #b91c1c;
       color: #fecaca;
     }
-
     .overlay-actions button.mute {
       font-size: 11px;
       color: var(--page-text-sub);
     }
-
     .overlay-hint {
       margin-top: 8px;
       font-size: 11px;
       color: var(--page-text-sub);
     }
-
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     @media (max-width: 768px) {
       header {
         flex-direction: column;
         align-items: flex-start;
       }
-
       .header-center {
         justify-content: flex-start;
         order: 2;
       }
-
-      .header-right {
-        align-self: flex-end;
-      }
-
-      .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+      .header-right { align-self: flex-end; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 480px) {
-      .page {
-        padding: 16px 12px 24px;
-      }
-
-      .title {
-        font-size: 20px;
-      }
-
-      .card {
-        padding: 14px 12px 12px;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
+      .page { padding: 16px 12px 24px; }
+      .title { font-size: 20px; }
+      .card { padding: 14px 12px 12px; }
+      .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -429,7 +403,7 @@
     <header>
       <div class="header-left">
         <div class="title">𝓥𝓐𝓜𝓟𝓘𝓡</div>
-        <div class="subtitle">버튼을 눌러 원하는 사이트로 바로 이동</div>
+        <div class="subtitle">폴더를 펼쳐서 원하는 링크를 선택</div>
       </div>
       <div class="header-center">
         <button class="tab-btn" data-game="game1">뱀피르</button>
@@ -449,16 +423,13 @@
         <button class="config-btn" id="exportBtn" hidden>설정 내보내기</button>
         <button class="config-btn" id="importBtn" hidden>설정 가져오기</button>
       </div>
-      <div class="grid" id="cardGrid"></div>
+      <div id="cardGrid"></div>
     </main>
 
     <footer>
       © <span id="year"></span> 내 링크 모음 페이지
     </footer>
   </div>
-
-  <!-- 로그인, 카드 편집, 설정 오버레이 및 JS 로직은 이전 버전과 동일 -->
-  <!-- 아래 JS는 너가 쓰고 있던 최신 버전 그대로라 길어서 생략 없이 붙여놓음 -->
 
   <div class="overlay hidden" id="loginOverlay">
     <div class="overlay-box">
@@ -523,7 +494,8 @@
           <button type="submit" class="primary">저장</button>
         </div>
         <p class="overlay-hint">
-          이 설정은 이 페이지에서만 임시로 적용됩니다. 공용 기본값으로 쓰려면 '설정 내보내기'로 JSON을 복사해 index.html에 붙여넣어 주세요.
+          이 설정은 이 페이지에서만 임시로 적용됩니다. 공용 기본값으로 쓰려면
+          '설정 내보내기'로 JSON을 복사해 index.html에 붙여넣어 주세요.
         </p>
       </form>
     </div>
@@ -551,87 +523,77 @@
     const LOGIN_USERNAME = "tjdals9328";
     const LOGIN_PASSWORD_HASH = "f63326357e49c8c139d5fb08bab4b34f488e3c1845e603f23023ea3672a9a5f8";
 
-    const baseCards = [];
-
-    function cloneCards(list) {
-      return list.map(function (card) {
-        return {
-          id: card.id,
-          title: card.title,
-          desc: card.desc,
-          url: card.url,
-          badge: card.badge,
-          badgeAccent: card.badgeAccent,
-          host: card.host,
-          image: card.image
-        };
-      });
-    }
-
     let cards = {
       "game1": [
         {
           "id": "c1",
+          "group": "sheet",
           "title": "길드 시트지",
           "desc": "길드 시트지로 이동합니다.\n 모든 내역을 한번에 확인하세요!",
           "url": "https://docs.google.com/spreadsheets/d/13rsaqA7GHEx4TW1WIokCzoOH6rfQ8hU5sUShMuzEeo0/edit?usp=sharing",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
-          "host": "스프레드시트",
+          "host": "SpreadSheet",
           "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
         },
         {
           "id": "c3",
+          "group": "sheet",
           "title": "전투력 갱신 시트지",
-          "desc": "전투력을 갱신하는 시트지입니다.\n닉네임과 전투력을 매일 갱신해주세요.",
+          "desc": "전투력을 갱신하는 시트지입니다.\n전투력을 직접 갱신해주세요.",
           "url": "https://docs.google.com/spreadsheets/d/1ERRQHSNRMwwlxGK11aUt_f01nBktH8Nbk0JC_QaurCo/edit?gid=0#gid=0",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
-          "host": "스프레드시트",
+          "host": "SpreadSheet",
           "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
         },
         {
           "id": "c1763717017929b",
+          "group": "sheet",
           "title": "출석체크 사이트",
           "desc": "출석체크 정보 사이트입니다. \n아이디: vampir 비밀번호: qqwwee",
           "url": "https://jbgj.xyz/auth/login",
-          "host": "총 관리자",
+          "host": "Site",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
           "image": "https://play-lh.googleusercontent.com/bpiLHv_Nvsa4Iv_KIfboxKBtKM6B5n19ftEdLq8iPFvSLSvgS_xjTrf4GMMmVE28hQ"
         },
         {
           "id": "c2",
+          "group": "kakao",
           "title": "길드 공지방",
           "desc": "길드 공지방으로 이동합니다.",
           "url": "https://open.kakao.com/o/gnYNEtZh",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
-          "host": "카카오톡",
+          "host": "KakaoTalk",
           "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
         },
         {
           "id": "c1763716681097",
+          "group": "kakao",
           "title": "길드 입찰방",
-          "desc": "길드 입찰방으로 이동합니다.\n비밀번호는 관리자에게 문의 해주세요.",
+          "desc": "길드 입찰방으로 이동합니다.\n비밀번호는 관리자 문의",
           "url": "https://open.kakao.com/o/gBHKh2Qh",
-          "host": "카카오톡",
+          "host": "KakaoTalk",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
           "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
         },
         {
           "id": "c1763717911647",
+          "group": "kakao",
           "title": "길드 자유방",
-          "desc": "길드 자유방으로 이동합니다.\n비밀번호는 관리자에게 문의 해주세요.",
+          "desc": "길드 자유방으로 이동합니다.\n비밀번호는 관리자 문의",
           "url": "https://open.kakao.com/o/gUIwDdMh",
-          "host": "카카오톡",
+          "host": "KakaoTalk",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
           "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
         },
         {
           "id": "c7974635",
+          "group": "kakao",
           "title": "디스코드",
           "desc": "디스코드로 이동합니다.",
           "url": "https://discord.com/invite/vampiroscar2",
@@ -642,8 +604,9 @@
         },
         {
           "id": "c1763717017929",
-          "title": "[총 관리자] 라이엇",
-          "desc": "총 관리자 오픈프로필입니다. ",
+          "group": "admin",
+          "title": "[출금] 라이엇",
+          "desc": "출금 관리자 오픈프로필입니다.\n출금 신청은 여기로 보내주세요.",
           "url": "https://open.kakao.com/o/sYx1LIdd",
           "host": "총 관리자",
           "badge": "새 창으로 열림",
@@ -652,6 +615,7 @@
         },
         {
           "id": "c1763716895774",
+          "group": "admin",
           "title": "[사신] 에비츄",
           "desc": "[사신] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
           "url": "https://open.kakao.com/o/sDuPL2Qh",
@@ -662,6 +626,7 @@
         },
         {
           "id": "c1763717648916",
+          "group": "admin",
           "title": "[사신] 후보",
           "desc": "[사신] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
           "url": "https://open.kakao.com/o/saqZnp0h",
@@ -672,6 +637,7 @@
         },
         {
           "id": "c1763717051788",
+          "group": "admin",
           "title": "[축복] 써준",
           "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
           "url": "https://open.kakao.com/me/ssjun",
@@ -682,6 +648,7 @@
         },
         {
           "id": "c1763718298548",
+          "group": "admin",
           "title": "[축복] 루떼",
           "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
           "url": "https://open.kakao.com/o/syb9BE1h",
@@ -692,6 +659,7 @@
         },
         {
           "id": "c1763717969260",
+          "group": "admin",
           "title": "[놀자] 레드불",
           "desc": "[놀자] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
           "url": "https://open.kakao.com/o/sZLi1tZh",
@@ -702,6 +670,7 @@
         },
         {
           "id": "c1763717774826",
+          "group": "admin",
           "title": "[루비] 출렁핑",
           "desc": "[루비] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
           "url": "https://open.kakao.com/o/sDKMyuZh",
@@ -722,7 +691,7 @@
     let editingIsNew = false;
     let configMode = null;
 
-    const gridEl = document.getElementById("cardGrid");
+    const gridContainer = document.getElementById("cardGrid");
     const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-btn"));
     const userButton = document.getElementById("userButton");
     const userLabel = document.getElementById("userLabel");
@@ -761,18 +730,15 @@
 
     function setActiveTabFromCurrentGame() {
       tabButtons.forEach(function (btn) {
-        var game = btn.getAttribute("data-game");
-        if (game === currentGame) {
-          btn.classList.add("active");
-        } else {
-          btn.classList.remove("active");
-        }
+        const game = btn.getAttribute("data-game");
+        if (game === currentGame) btn.classList.add("active");
+        else btn.classList.remove("active");
       });
     }
 
     tabButtons.forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var gameId = btn.getAttribute("data-game");
+        const gameId = btn.getAttribute("data-game");
         if (!gameId) return;
         currentGame = gameId;
         setActiveTabFromCurrentGame();
@@ -800,10 +766,10 @@
       if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) {
         return Promise.reject(new Error("no crypto"));
       }
-      var encoder = new TextEncoder();
-      var data = encoder.encode(text);
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
       return window.crypto.subtle.digest("SHA-256", data).then(function (buf) {
-        var arr = Array.from(new Uint8Array(buf));
+        const arr = Array.from(new Uint8Array(buf));
         return arr.map(function (b) {
           return b.toString(16).padStart(2, "0");
         }).join("");
@@ -812,8 +778,8 @@
 
     loginForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var id = loginIdInput.value.trim();
-      var pw = loginPwInput.value;
+      const id = loginIdInput.value.trim();
+      const pw = loginPwInput.value;
       if (!id || !pw) {
         alert("아이디와 비밀번호를 모두 입력하세요.");
         return;
@@ -877,7 +843,7 @@
     }
 
     function updateEditUI() {
-      var show = isLoggedIn && editMode;
+      const show = isLoggedIn && editMode;
       addCardBtn.hidden = !show;
       exportBtn.hidden = !show;
       importBtn.hidden = !show;
@@ -887,7 +853,7 @@
     }
 
     function openCardEditor(index) {
-      var list = cards[currentGame] || (cards[currentGame] = []);
+      const list = cards[currentGame] || (cards[currentGame] = []);
       if (typeof index === "number" && list[index]) {
         editingIndex = index;
         editingIsNew = false;
@@ -895,7 +861,8 @@
         editingIndex = null;
         editingIsNew = true;
       }
-      var card;
+
+      let card;
       if (!editingIsNew && list[editingIndex]) {
         card = list[editingIndex];
       } else {
@@ -907,9 +874,11 @@
           host: "",
           badge: "",
           badgeAccent: true,
-          image: ""
+          image: "",
+          group: "sheet"
         };
       }
+
       cardTitleInput.value = card.title || "";
       cardDescInput.value = card.desc || "";
       cardUrlInput.value = card.url || "";
@@ -917,6 +886,7 @@
       cardBadgeInput.value = card.badge || "";
       cardBadgeAccentInput.checked = !!card.badgeAccent;
       cardImageInput.value = card.image || "";
+
       if (editingIsNew) {
         cardDeleteBtn.hidden = true;
         cardMoveUpBtn.disabled = true;
@@ -940,14 +910,15 @@
 
     cardForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var list = cards[currentGame] || (cards[currentGame] = []);
-      var card;
+      const list = cards[currentGame] || (cards[currentGame] = []);
+      let card;
       if (!editingIsNew && typeof editingIndex === "number" && list[editingIndex]) {
         card = list[editingIndex];
       } else {
-        card = { id: "c" + Date.now() };
+        card = { id: "c" + Date.now(), group: "sheet" };
         editingIsNew = true;
       }
+
       card.title = cardTitleInput.value.trim();
       card.desc = cardDescInput.value.trim();
       card.url = cardUrlInput.value.trim();
@@ -955,11 +926,10 @@
       card.badge = cardBadgeInput.value.trim();
       card.badgeAccent = !!cardBadgeAccentInput.checked;
       card.image = cardImageInput.value.trim();
-      if (editingIsNew) {
-        list.push(card);
-      } else {
-        list[editingIndex] = card;
-      }
+
+      if (editingIsNew) list.push(card);
+      else list[editingIndex] = card;
+
       saveCards();
       cardOverlay.classList.add("hidden");
       renderCards();
@@ -967,7 +937,7 @@
 
     cardDeleteBtn.addEventListener("click", function () {
       if (editingIsNew) return;
-      var list = cards[currentGame] || [];
+      const list = cards[currentGame] || [];
       if (typeof editingIndex !== "number" || !list[editingIndex]) return;
       if (!confirm("이 아이콘을 삭제할까요?")) return;
       list.splice(editingIndex, 1);
@@ -978,11 +948,11 @@
 
     function moveEditingCard(offset) {
       if (editingIsNew) return;
-      var list = cards[currentGame] || [];
+      const list = cards[currentGame] || [];
       if (typeof editingIndex !== "number" || !list[editingIndex]) return;
-      var newIndex = editingIndex + offset;
+      const newIndex = editingIndex + offset;
       if (newIndex < 0 || newIndex >= list.length) return;
-      var temp = list[editingIndex];
+      const temp = list[editingIndex];
       list[editingIndex] = list[newIndex];
       list[newIndex] = temp;
       editingIndex = newIndex;
@@ -1029,14 +999,14 @@
 
     configApply.addEventListener("click", function () {
       if (configMode !== "import") return;
-      var text = configText.value.trim();
+      const text = configText.value.trim();
       if (!text) {
         alert("JSON을 붙여넣어 주세요.");
         return;
       }
       try {
-        var parsed = JSON.parse(text);
-        var newCards = { game1: [], game2: [], game3: [] };
+        const parsed = JSON.parse(text);
+        const newCards = { game1: [], game2: [], game3: [] };
         if (Array.isArray(parsed)) {
           newCards[currentGame] = parsed;
         } else {
@@ -1056,67 +1026,129 @@
       }
     });
 
-    function renderCards() {
-      gridEl.innerHTML = "";
-      var list = cards[currentGame] || [];
-      list.forEach(function (card, index) {
-        var a = document.createElement("a");
-        a.className = "card";
-        a.href = card.url || "#";
-        a.target = "_blank";
-        a.rel = "noopener";
+    function createCardElement(card, index) {
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = card.url || "#";
+      a.target = "_blank";
+      a.rel = "noopener";
 
-        var main = document.createElement("div");
-        main.className = "card-main";
+      const main = document.createElement("div");
+      main.className = "card-main";
 
-        if (card.image) {
-          var icon = document.createElement("div");
-          icon.className = "card-icon";
-          var img = document.createElement("img");
-          img.src = card.image;
-          icon.appendChild(img);
-          main.appendChild(icon);
+      if (card.image) {
+        const icon = document.createElement("div");
+        icon.className = "card-icon";
+        const img = document.createElement("img");
+        img.src = card.image;
+        icon.appendChild(img);
+        main.appendChild(icon);
+      }
+
+      const textWrap = document.createElement("div");
+      textWrap.className = "card-text";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "card-title";
+      titleEl.textContent = card.title || "";
+
+      const descEl = document.createElement("div");
+      descEl.className = "card-desc";
+      descEl.textContent = card.desc || "";
+
+      textWrap.appendChild(titleEl);
+      textWrap.appendChild(descEl);
+      main.appendChild(textWrap);
+
+      const meta = document.createElement("div");
+      meta.className = "card-meta";
+
+      const badgeEl = document.createElement("div");
+      badgeEl.className = "badge" + (card.badgeAccent ? " badge-accent" : "");
+      badgeEl.textContent = card.badge || "";
+
+      const hostEl = document.createElement("div");
+      hostEl.textContent = card.host || "";
+
+      meta.appendChild(badgeEl);
+      meta.appendChild(hostEl);
+
+      a.appendChild(main);
+      a.appendChild(meta);
+
+      a.addEventListener("click", function (e) {
+        if (editMode && isLoggedIn) {
+          e.preventDefault();
+          openCardEditor(index);
         }
+      });
 
-        var textWrap = document.createElement("div");
-        textWrap.className = "card-text";
+      return a;
+    }
 
-        var titleEl = document.createElement("div");
-        titleEl.className = "card-title";
-        titleEl.textContent = card.title || "";
+    function renderCards() {
+      gridContainer.innerHTML = "";
+      const list = cards[currentGame] || [];
 
-        var descEl = document.createElement("div");
-        descEl.className = "card-desc";
-        descEl.textContent = card.desc || "";
+      const groupDefs = [
+        { key: "kakao", label: "카카오톡 / 디스코드", icon: "💬" },
+        { key: "sheet", label: "시트 / 데이터", icon: "📊" },
+        { key: "admin", label: "관리자 / 담당자", icon: "🧑‍💼" },
+        { key: "other", label: "기타", icon: "📁" }
+      ];
 
-        textWrap.appendChild(titleEl);
-        textWrap.appendChild(descEl);
-        main.appendChild(textWrap);
+      const grouped = {};
+      list.forEach(function (card, idx) {
+        const g = card.group || "other";
+        if (!grouped[g]) grouped[g] = [];
+        grouped[g].push({ card: card, index: idx });
+      });
 
-        var meta = document.createElement("div");
-        meta.className = "card-meta";
+      groupDefs.forEach(function (g) {
+        const items = grouped[g.key];
+        if (!items || !items.length) return;
 
-        var badgeEl = document.createElement("div");
-        badgeEl.className = "badge" + (card.badgeAccent ? " badge-accent" : "");
-        badgeEl.textContent = card.badge || "";
+        const folder = document.createElement("div");
+        folder.className = "folder";
 
-        var hostEl = document.createElement("div");
-        hostEl.textContent = card.host || "";
+        const header = document.createElement("button");
+        header.type = "button";
+        header.className = "folder-header";
 
-        meta.appendChild(badgeEl);
-        meta.appendChild(hostEl);
+        const title = document.createElement("div");
+        title.className = "folder-title";
+        title.innerHTML = g.icon + " " + g.label;
+        const chip = document.createElement("span");
+        chip.textContent = items.length + "개";
+        title.appendChild(chip);
 
-        a.appendChild(main);
-        a.appendChild(meta);
+        const toggleLabel = document.createElement("div");
+        toggleLabel.className = "folder-toggle";
+        toggleLabel.textContent = "접기";
 
-        a.addEventListener("click", function (e) {
-          if (editMode && isLoggedIn) {
-            e.preventDefault();
-            openCardEditor(index);
-          }
+        header.appendChild(title);
+        header.appendChild(toggleLabel);
+
+        const body = document.createElement("div");
+        body.className = "folder-body";
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        items.forEach(function (ref) {
+          grid.appendChild(createCardElement(ref.card, ref.index));
         });
 
-        gridEl.appendChild(a);
+        body.appendChild(grid);
+
+        header.addEventListener("click", function () {
+          const collapsed = body.classList.toggle("collapsed");
+          toggleLabel.textContent = collapsed ? "펼치기" : "접기";
+        });
+
+        folder.appendChild(header);
+        folder.appendChild(body);
+        gridContainer.appendChild(folder);
       });
     }
 
