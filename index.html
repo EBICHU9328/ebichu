@@ -83,45 +83,6 @@
       transform: translateY(-1px);
     }
 
-    .user-button {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--page-text-main);
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .user-avatar {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #60a5fa, #1d4ed8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-    }
-    .user-label { white-space: nowrap; }
-
-    .edit-toggle {
-      padding: 5px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--page-text-sub);
-      font-size: 11px;
-      cursor: pointer;
-    }
-    .edit-toggle.on {
-      background: rgba(22, 163, 74, 0.22);
-      border-color: #22c55e;
-      color: #bbf7d0;
-    }
-
     .grid-header {
       display: flex;
       justify-content: flex-start;
@@ -129,16 +90,6 @@
       margin-top: 4px;
       margin-bottom: 8px;
       flex-wrap: wrap;
-    }
-    .add-card-btn,
-    .config-btn {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--page-text-main);
-      font-size: 12px;
-      cursor: pointer;
     }
 
     .folder {
@@ -284,97 +235,6 @@
       text-align: right;
     }
 
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.78);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 40;
-    }
-    .overlay-box {
-      background: #020617;
-      border-radius: 16px;
-      border: 1px solid var(--card-border);
-      padding: 18px 16px 14px;
-      width: 100%;
-      max-width: 340px;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
-    }
-    .overlay-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    .overlay-field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-    .overlay-field label {
-      font-size: 12px;
-      color: var(--page-text-sub);
-    }
-    .overlay-field input,
-    .overlay-field textarea {
-      font-size: 13px;
-      padding: 7px 9px;
-      border-radius: 10px;
-      border: 1px solid var(--card-border);
-      background: #020617;
-      color: var(--page-text-main);
-      outline: none;
-      resize: vertical;
-    }
-    .overlay-field input:focus,
-    .overlay-field textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.7);
-    }
-    .overlay-field-inline {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-      font-size: 12px;
-      color: var(--page-text-sub);
-    }
-    .overlay-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 6px;
-      margin-top: 6px;
-      flex-wrap: wrap;
-    }
-    .overlay-actions button {
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--page-text-main);
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .overlay-actions button.primary {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: #f9fafb;
-    }
-    .overlay-actions button.danger {
-      border-color: #b91c1c;
-      color: #fecaca;
-    }
-    .overlay-actions button.mute {
-      font-size: 11px;
-      color: var(--page-text-sub);
-    }
-    .overlay-hint {
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--page-text-sub);
-    }
     .hidden { display: none !important; }
 
     @media (max-width: 768px) {
@@ -408,21 +268,11 @@
       <div class="header-center">
         <button class="tab-btn" data-game="game1">뱀피르</button>
       </div>
-      <div class="header-right">
-        <button class="edit-toggle" id="editToggle" hidden>편집 모드 꺼짐</button>
-        <button class="user-button" id="userButton">
-          <div class="user-avatar" id="userAvatar"></div>
-          <span class="user-label" id="userLabel">로그인</span>
-        </button>
-      </div>
+      <div class="header-right"></div>
     </header>
 
     <main>
-      <div class="grid-header">
-        <button class="add-card-btn" id="addCardBtn" hidden>네모칸 추가</button>
-        <button class="config-btn" id="exportBtn" hidden>설정 내보내기</button>
-        <button class="config-btn" id="importBtn" hidden>설정 가져오기</button>
-      </div>
+      <div class="grid-header"></div>
       <div id="cardGrid"></div>
     </main>
 
@@ -431,98 +281,7 @@
     </footer>
   </div>
 
-  <div class="overlay hidden" id="loginOverlay">
-    <div class="overlay-box">
-      <div class="overlay-title">로그인</div>
-      <form id="loginForm">
-        <div class="overlay-field">
-          <label for="loginId">아이디</label>
-          <input id="loginId" autocomplete="username">
-        </div>
-        <div class="overlay-field">
-          <label for="loginPw">비밀번호</label>
-          <input id="loginPw" type="password" autocomplete="current-password">
-        </div>
-        <div class="overlay-actions">
-          <button type="button" id="loginCancel" class="mute">취소</button>
-          <button type="submit" class="primary">로그인</button>
-        </div>
-        <p class="overlay-hint">
-          이 로그인은 이 페이지 안에서만 사용되며, 입력한 정보는 서버로 전송되지 않습니다.
-        </p>
-      </form>
-    </div>
-  </div>
-
-  <div class="overlay hidden" id="cardOverlay">
-    <div class="overlay-box">
-      <div class="overlay-title">아이콘 설정</div>
-      <form id="cardForm">
-        <div class="overlay-field">
-          <label for="cardTitle">제목</label>
-          <input id="cardTitle">
-        </div>
-        <div class="overlay-field">
-          <label for="cardDesc">설명</label>
-          <textarea id="cardDesc" rows="3"></textarea>
-        </div>
-        <div class="overlay-field">
-          <label for="cardUrl">링크(URL)</label>
-          <input id="cardUrl" placeholder="https://...">
-        </div>
-        <div class="overlay-field">
-          <label for="cardHost">오른쪽 아래 표시 텍스트</label>
-          <input id="cardHost" placeholder="예: youtube.com">
-        </div>
-        <div class="overlay-field">
-          <label for="cardBadge">뱃지 텍스트</label>
-          <input id="cardBadge" placeholder="예: 새 창으로 열림">
-        </div>
-        <div class="overlay-field-inline">
-          <input type="checkbox" id="cardBadgeAccent">
-          <label for="cardBadgeAccent">뱃지를 강조 색으로 표시</label>
-        </div>
-        <div class="overlay-field">
-          <label for="cardImage">아이콘 이미지 URL (선택)</label>
-          <input id="cardImage" placeholder="유튜브/카톡/디코 아이콘 주소 등">
-        </div>
-        <div class="overlay-actions">
-          <button type="button" id="cardDeleteBtn" class="danger">삭제</button>
-          <button type="button" id="cardMoveUp" class="mute">위로</button>
-          <button type="button" id="cardMoveDown" class="mute">아래로</button>
-          <button type="button" id="cardCancel">닫기</button>
-          <button type="submit" class="primary">저장</button>
-        </div>
-        <p class="overlay-hint">
-          이 설정은 이 페이지에서만 임시로 적용됩니다. 공용 기본값으로 쓰려면
-          '설정 내보내기'로 JSON을 복사해 index.html에 붙여넣어 주세요.
-        </p>
-      </form>
-    </div>
-  </div>
-
-  <div class="overlay hidden" id="configOverlay">
-    <div class="overlay-box">
-      <div class="overlay-title" id="configTitle">설정 내보내기</div>
-      <div class="overlay-field">
-        <label for="configText">설정 JSON</label>
-        <textarea id="configText" rows="8"></textarea>
-      </div>
-      <div class="overlay-actions">
-        <button type="button" id="configCancel">닫기</button>
-        <button type="button" id="configApply" class="primary">적용</button>
-      </div>
-      <p class="overlay-hint">
-        내보내기: 내용을 복사해서 index.html 안에 붙여넣어 공용 기본값으로 만들 수 있습니다.
-        가져오기: 다른 곳에서 복사한 JSON을 붙여넣고 적용을 누르면 이 브라우저에 반영됩니다.
-      </p>
-    </div>
-  </div>
-
   <script>
-    const LOGIN_USERNAME = "tjdals9328";
-    const LOGIN_PASSWORD_HASH = "f63326357e49c8c139d5fb08bab4b34f488e3c1845e603f23023ea3672a9a5f8";
-
     let cards = {
       "game1": [
         {
@@ -599,7 +358,7 @@
           "url": "https://discord.com/invite/vampiroscar2",
           "badge": "새 창으로 열림",
           "badgeAccent": true,
-          "host": "Discord",
+          "host": "DISCORD",
           "image": "https://cliply.co/wp-content/uploads/2021/08/372108630_DISCORD_LOGO_400.gif"
         },
         {
@@ -684,7 +443,7 @@
           "group": "youtuber",
           "title": "빅보스",
           "desc": "빅보스 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
-          "url": "www.youtube.com/@유튜브빅보스?sub_confirmation=1",
+          "url": "https://www.youtube.com/@유튜브빅보스?sub_confirmation=1",
           "host": "YouTube",
           "badge": "구독하러 가기",
           "badgeAccent": true,
@@ -695,7 +454,7 @@
           "group": "youtuber",
           "title": "재범군주",
           "desc": "재범군주 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
-          "url": "www.youtube.com/@재범군주?sub_confirmation=1",
+          "url": "https://www.youtube.com/@재범군주?sub_confirmation=1",
           "host": "YouTube",
           "badge": "구독하러 가기",
           "badgeAccent": true,
@@ -706,7 +465,7 @@
           "group": "youtuber",
           "title": "원큐",
           "desc": "원큐 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
-          "url": "www.youtube.com/@원큐?sub_confirmation=1",
+          "url": "https://www.youtube.com/@원큐?sub_confirmation=1",
           "host": "YouTube",
           "badge": "구독하러 가기",
           "badgeAccent": true,
@@ -717,7 +476,7 @@
           "group": "youtuber",
           "title": "아이엠솔이",
           "desc": "아이엠솔이 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
-          "url": "www.youtube.com/@아이엠솔이?sub_confirmation=1",
+          "url": "https://www.youtube.com/@아이엠솔이?sub_confirmation=1",
           "host": "YouTube",
           "badge": "구독하러 가기",
           "badgeAccent": true,
@@ -728,7 +487,7 @@
           "group": "youtuber",
           "title": "화통TV",
           "desc": "화통TV 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
-          "url": "www.youtube.com/@화통TV?sub_confirmation=1",
+          "url": "https://www.youtube.com/@화통TV?sub_confirmation=1",
           "host": "YouTube",
           "badge": "구독하러 가기",
           "badgeAccent": true,
@@ -739,9 +498,9 @@
           "group": "youtuber",
           "title": "사땅이",
           "desc": "사땅이 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
-          "url": "www.youtube.com/@사땅이?sub_confirmation=1",
+          "url": "https://www.youtube.com/@사땅이?sub_confirmation=1",
           "host": "YouTube",
-          "badge": "새 창으로 열림",
+          "badge": "구독하러 가기",
           "badgeAccent": true,
           "image": "https://yt3.googleusercontent.com/VOUYOvCakRNBf7XjY0hDUzJvczAttuSLem_IO4DeFzT8uUCKcsMDaxpMGBcVopfuf0BBJHRI=s900-c-k-c0x00ffffff-no-rj"
         }
@@ -751,46 +510,9 @@
     };
 
     let currentGame = "game1";
-    let isLoggedIn = false;
-    let editMode = false;
-    let editingIndex = null;
-    let editingIsNew = false;
-    let configMode = null;
 
     const gridContainer = document.getElementById("cardGrid");
     const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-btn"));
-    const userButton = document.getElementById("userButton");
-    const userLabel = document.getElementById("userLabel");
-    const editToggle = document.getElementById("editToggle");
-    const addCardBtn = document.getElementById("addCardBtn");
-    const exportBtn = document.getElementById("exportBtn");
-    const importBtn = document.getElementById("importBtn");
-
-    const loginOverlay = document.getElementById("loginOverlay");
-    const loginForm = document.getElementById("loginForm");
-    const loginIdInput = document.getElementById("loginId");
-    const loginPwInput = document.getElementById("loginPw");
-    const loginCancel = document.getElementById("loginCancel");
-
-    const cardOverlay = document.getElementById("cardOverlay");
-    const cardForm = document.getElementById("cardForm");
-    const cardTitleInput = document.getElementById("cardTitle");
-    const cardDescInput = document.getElementById("cardDesc");
-    const cardUrlInput = document.getElementById("cardUrl");
-    const cardHostInput = document.getElementById("cardHost");
-    const cardBadgeInput = document.getElementById("cardBadge");
-    const cardBadgeAccentInput = document.getElementById("cardBadgeAccent");
-    const cardImageInput = document.getElementById("cardImage");
-    const cardCancelBtn = document.getElementById("cardCancel");
-    const cardDeleteBtn = document.getElementById("cardDeleteBtn");
-    const cardMoveUpBtn = document.getElementById("cardMoveUp");
-    const cardMoveDownBtn = document.getElementById("cardMoveDown");
-
-    const configOverlay = document.getElementById("configOverlay");
-    const configTitle = document.getElementById("configTitle");
-    const configText = document.getElementById("configText");
-    const configCancel = document.getElementById("configCancel");
-    const configApply = document.getElementById("configApply");
 
     document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -812,287 +534,7 @@
       });
     });
 
-    userButton.addEventListener("click", function () {
-      if (isLoggedIn) {
-        if (confirm("로그아웃 하시겠습니까?")) {
-          isLoggedIn = false;
-          editMode = false;
-          updateLoginUI();
-          updateEditUI();
-        }
-      } else {
-        loginOverlay.classList.remove("hidden");
-        loginIdInput.value = "";
-        loginPwInput.value = "";
-        loginIdInput.focus();
-      }
-    });
-
-    function hashText(text) {
-      if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) {
-        return Promise.reject(new Error("no crypto"));
-      }
-      const encoder = new TextEncoder();
-      const data = encoder.encode(text);
-      return window.crypto.subtle.digest("SHA-256", data).then(function (buf) {
-        const arr = Array.from(new Uint8Array(buf));
-        return arr.map(function (b) {
-          return b.toString(16).padStart(2, "0");
-        }).join("");
-      });
-    }
-
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const id = loginIdInput.value.trim();
-      const pw = loginPwInput.value;
-      if (!id || !pw) {
-        alert("아이디와 비밀번호를 모두 입력하세요.");
-        return;
-      }
-      if (id !== LOGIN_USERNAME) {
-        alert("아이디 또는 비밀번호가 잘못되었습니다.");
-        return;
-      }
-      hashText(pw).then(function (hash) {
-        if (hash === LOGIN_PASSWORD_HASH) {
-          isLoggedIn = true;
-          loginOverlay.classList.add("hidden");
-          loginPwInput.value = "";
-          updateLoginUI();
-          updateEditUI();
-          alert("로그인되었습니다. '편집 모드'를 켜면 아이콘을 수정하거나 추가할 수 있습니다.");
-        } else {
-          alert("아이디 또는 비밀번호가 잘못되었습니다.");
-        }
-      }).catch(function () {
-        alert("이 브라우저에서는 로그인 기능을 사용할 수 없습니다.");
-      });
-    });
-
-    loginCancel.addEventListener("click", function () {
-      loginOverlay.classList.add("hidden");
-    });
-
-    editToggle.addEventListener("click", function () {
-      if (!isLoggedIn) return;
-      editMode = !editMode;
-      if (editMode) {
-        editToggle.classList.add("on");
-        editToggle.textContent = "편집 모드 켜짐";
-      } else {
-        editToggle.classList.remove("on");
-        editToggle.textContent = "편집 모드 꺼짐";
-        cardOverlay.classList.add("hidden");
-        configOverlay.classList.add("hidden");
-      }
-      updateEditUI();
-    });
-
-    function updateLoginUI() {
-      if (isLoggedIn) {
-        userLabel.textContent = LOGIN_USERNAME;
-        editToggle.hidden = false;
-        if (editMode) {
-          editToggle.classList.add("on");
-          editToggle.textContent = "편집 모드 켜짐";
-        } else {
-          editToggle.classList.remove("on");
-          editToggle.textContent = "편집 모드 꺼짐";
-        }
-      } else {
-        userLabel.textContent = "로그인";
-        editToggle.hidden = true;
-        editMode = false;
-      }
-      updateEditUI();
-    }
-
-    function updateEditUI() {
-      const show = isLoggedIn && editMode;
-      addCardBtn.hidden = !show;
-      exportBtn.hidden = !show;
-      importBtn.hidden = !show;
-    }
-
-    function saveCards() {
-    }
-
-    function openCardEditor(index) {
-      const list = cards[currentGame] || (cards[currentGame] = []);
-      if (typeof index === "number" && list[index]) {
-        editingIndex = index;
-        editingIsNew = false;
-      } else {
-        editingIndex = null;
-        editingIsNew = true;
-      }
-
-      let card;
-      if (!editingIsNew && list[editingIndex]) {
-        card = list[editingIndex];
-      } else {
-        card = {
-          id: "c" + Date.now(),
-          title: "",
-          desc: "",
-          url: "",
-          host: "",
-          badge: "",
-          badgeAccent: true,
-          image: "",
-          group: "sheet"
-        };
-      }
-
-      cardTitleInput.value = card.title || "";
-      cardDescInput.value = card.desc || "";
-      cardUrlInput.value = card.url || "";
-      cardHostInput.value = card.host || "";
-      cardBadgeInput.value = card.badge || "";
-      cardBadgeAccentInput.checked = !!card.badgeAccent;
-      cardImageInput.value = card.image || "";
-
-      if (editingIsNew) {
-        cardDeleteBtn.hidden = true;
-        cardMoveUpBtn.disabled = true;
-        cardMoveDownBtn.disabled = true;
-      } else {
-        cardDeleteBtn.hidden = false;
-        cardMoveUpBtn.disabled = false;
-        cardMoveDownBtn.disabled = false;
-      }
-      cardOverlay.classList.remove("hidden");
-    }
-
-    addCardBtn.addEventListener("click", function () {
-      if (!isLoggedIn || !editMode) return;
-      openCardEditor(null);
-    });
-
-    cardCancelBtn.addEventListener("click", function () {
-      cardOverlay.classList.add("hidden");
-    });
-
-    cardForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const list = cards[currentGame] || (cards[currentGame] = []);
-      let card;
-      if (!editingIsNew && typeof editingIndex === "number" && list[editingIndex]) {
-        card = list[editingIndex];
-      } else {
-        card = { id: "c" + Date.now(), group: "sheet" };
-        editingIsNew = true;
-      }
-
-      card.title = cardTitleInput.value.trim();
-      card.desc = cardDescInput.value.trim();
-      card.url = cardUrlInput.value.trim();
-      card.host = cardHostInput.value.trim();
-      card.badge = cardBadgeInput.value.trim();
-      card.badgeAccent = !!cardBadgeAccentInput.checked;
-      card.image = cardImageInput.value.trim();
-
-      if (editingIsNew) list.push(card);
-      else list[editingIndex] = card;
-
-      saveCards();
-      cardOverlay.classList.add("hidden");
-      renderCards();
-    });
-
-    cardDeleteBtn.addEventListener("click", function () {
-      if (editingIsNew) return;
-      const list = cards[currentGame] || [];
-      if (typeof editingIndex !== "number" || !list[editingIndex]) return;
-      if (!confirm("이 아이콘을 삭제할까요?")) return;
-      list.splice(editingIndex, 1);
-      saveCards();
-      cardOverlay.classList.add("hidden");
-      renderCards();
-    });
-
-    function moveEditingCard(offset) {
-      if (editingIsNew) return;
-      const list = cards[currentGame] || [];
-      if (typeof editingIndex !== "number" || !list[editingIndex]) return;
-      const newIndex = editingIndex + offset;
-      if (newIndex < 0 || newIndex >= list.length) return;
-      const temp = list[editingIndex];
-      list[editingIndex] = list[newIndex];
-      list[newIndex] = temp;
-      editingIndex = newIndex;
-      saveCards();
-      renderCards();
-    }
-
-    cardMoveUpBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      moveEditingCard(-1);
-    });
-
-    cardMoveDownBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      moveEditingCard(1);
-    });
-
-    function openConfigOverlay(mode) {
-      if (!isLoggedIn || !editMode) return;
-      configMode = mode;
-      if (mode === "export") {
-        configTitle.textContent = "설정 내보내기";
-        configText.value = JSON.stringify(cards, null, 2);
-        configApply.style.display = "none";
-      } else {
-        configTitle.textContent = "설정 가져오기";
-        configText.value = "";
-        configApply.style.display = "inline-block";
-      }
-      configOverlay.classList.remove("hidden");
-    }
-
-    exportBtn.addEventListener("click", function () {
-      openConfigOverlay("export");
-    });
-
-    importBtn.addEventListener("click", function () {
-      openConfigOverlay("import");
-    });
-
-    configCancel.addEventListener("click", function () {
-      configOverlay.classList.add("hidden");
-    });
-
-    configApply.addEventListener("click", function () {
-      if (configMode !== "import") return;
-      const text = configText.value.trim();
-      if (!text) {
-        alert("JSON을 붙여넣어 주세요.");
-        return;
-      }
-      try {
-        const parsed = JSON.parse(text);
-        const newCards = { game1: [], game2: [], game3: [] };
-        if (Array.isArray(parsed)) {
-          newCards[currentGame] = parsed;
-        } else {
-          ["game1", "game2", "game3"].forEach(function (key) {
-            if (parsed[key] && Array.isArray(parsed[key])) {
-              newCards[key] = parsed[key];
-            }
-          });
-        }
-        cards = newCards;
-        saveCards();
-        configOverlay.classList.add("hidden");
-        renderCards();
-        alert("설정을 적용했습니다.");
-      } catch (e) {
-        alert("JSON 형식이 잘못되었습니다.");
-      }
-    });
-
-    function createCardElement(card, index) {
+    function createCardElement(card) {
       const a = document.createElement("a");
       a.className = "card";
       a.href = card.url || "#";
@@ -1141,13 +583,6 @@
 
       a.appendChild(main);
       a.appendChild(meta);
-
-      a.addEventListener("click", function (e) {
-        if (editMode && isLoggedIn) {
-          e.preventDefault();
-          openCardEditor(index);
-        }
-      });
 
       return a;
     }
@@ -1203,7 +638,7 @@
         grid.className = "grid";
 
         items.forEach(function (ref) {
-          grid.appendChild(createCardElement(ref.card, ref.index));
+          grid.appendChild(createCardElement(ref.card));
         });
 
         body.appendChild(grid);
@@ -1220,7 +655,6 @@
     }
 
     setActiveTabFromCurrentGame();
-    updateLoginUI();
     renderCards();
   </script>
 </body>
