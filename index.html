@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>𝓥𝓐𝓜𝓟𝓘𝓡 - 폴더</title>
+  <title>𝓥𝓐𝓜𝓟𝓘𝓡</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
@@ -44,17 +44,6 @@
     }
 
     .header-left { min-width: 0; }
-    .header-center {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      flex: 1;
-    }
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
 
     .title {
       font-size: 22px;
@@ -63,25 +52,6 @@
       margin-bottom: 4px;
     }
     .subtitle { font-size: 13px; color: var(--page-text-sub); }
-
-    .tab-btn {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--page-text-sub);
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.08s ease;
-    }
-    .tab-btn:hover { border-color: var(--accent); color: #e5e7eb; }
-    .tab-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #f9fafb;
-      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.7);
-      transform: translateY(-1px);
-    }
 
     .grid-header {
       display: flex;
@@ -242,11 +212,6 @@
         flex-direction: column;
         align-items: flex-start;
       }
-      .header-center {
-        justify-content: flex-start;
-        order: 2;
-      }
-      .header-right { align-self: flex-end; }
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -263,12 +228,8 @@
     <header>
       <div class="header-left">
         <div class="title">𝓥𝓐𝓜𝓟𝓘𝓡</div>
-        <div class="subtitle">폴더를 펼쳐서 원하는 링크를 선택</div>
+        <div class="subtitle">Ebichu Site  Ver 1.0.1 (2025-11-26)</div>
       </div>
-      <div class="header-center">
-        <button class="tab-btn" data-game="game1">뱀피르</button>
-      </div>
-      <div class="header-right"></div>
     </header>
 
     <main>
@@ -504,35 +465,11 @@
           "badgeAccent": true,
           "image": "https://yt3.googleusercontent.com/VOUYOvCakRNBf7XjY0hDUzJvczAttuSLem_IO4DeFzT8uUCKcsMDaxpMGBcVopfuf0BBJHRI=s900-c-k-c0x00ffffff-no-rj"
         }
-      ],
-      "game2": [],
-      "game3": []
+      ]
     };
 
-    let currentGame = "game1";
-
     const gridContainer = document.getElementById("cardGrid");
-    const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-btn"));
-
     document.getElementById("year").textContent = new Date().getFullYear();
-
-    function setActiveTabFromCurrentGame() {
-      tabButtons.forEach(function (btn) {
-        const game = btn.getAttribute("data-game");
-        if (game === currentGame) btn.classList.add("active");
-        else btn.classList.remove("active");
-      });
-    }
-
-    tabButtons.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const gameId = btn.getAttribute("data-game");
-        if (!gameId) return;
-        currentGame = gameId;
-        setActiveTabFromCurrentGame();
-        renderCards();
-      });
-    });
 
     function createCardElement(card) {
       const a = document.createElement("a");
@@ -589,7 +526,7 @@
 
     function renderCards() {
       gridContainer.innerHTML = "";
-      const list = cards[currentGame] || [];
+      const list = cards["game1"] || [];
 
       const groupDefs = [
         { key: "kakao", label: "카카오톡 / 디스코드", icon: "💬" },
@@ -600,10 +537,10 @@
       ];
 
       const grouped = {};
-      list.forEach(function (card, idx) {
+      list.forEach(function (card) {
         const g = card.group || "other";
         if (!grouped[g]) grouped[g] = [];
-        grouped[g].push({ card: card, index: idx });
+        grouped[g].push(card);
       });
 
       groupDefs.forEach(function (g) {
@@ -637,8 +574,8 @@
         const grid = document.createElement("div");
         grid.className = "grid";
 
-        items.forEach(function (ref) {
-          grid.appendChild(createCardElement(ref.card));
+        items.forEach(function (card) {
+          grid.appendChild(createCardElement(card));
         });
 
         body.appendChild(grid);
@@ -654,7 +591,6 @@
       });
     }
 
-    setActiveTabFromCurrentGame();
     renderCards();
   </script>
 </body>
