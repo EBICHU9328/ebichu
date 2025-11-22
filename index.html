@@ -472,7 +472,7 @@
         </div>
         <div class="overlay-field">
           <label for="cardHost">오른쪽 아래 표시 텍스트</label>
-          <input id="cardHost" placeholder="예: naver.com">
+          <input id="cardHost" placeholder="예: youtube.com">
         </div>
         <div class="overlay-field">
           <label for="cardBadge">뱃지 텍스트</label>
@@ -484,7 +484,7 @@
         </div>
         <div class="overlay-field">
           <label for="cardImage">아이콘 이미지 URL (선택)</label>
-          <input id="cardImage" placeholder="카카오톡 이모티콘 이미지 주소 등">
+          <input id="cardImage" placeholder="유튜브/카톡/디코 아이콘 주소 등">
         </div>
         <div class="overlay-actions">
           <button type="button" id="cardDeleteBtn" class="danger">삭제</button>
@@ -678,6 +678,72 @@
           "badge": "새 창으로 열림",
           "badgeAccent": true,
           "image": "https://v-llage.s3.ap-northeast-2.amazonaws.com/image/1686574500997_M159773264371516143.gif"
+        },
+        {
+          "id": "yt1",
+          "group": "youtuber",
+          "title": "빅보스",
+          "desc": "빅보스 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "www.youtube.com/@유튜브빅보스?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/3nuSkOggjZ5kp2I5ifEmOECboaqKJgymy0YfdEORBf-hgyLRpdziOhNUDMIoPneKp5EOoKjW=s160-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "yt2",
+          "group": "youtuber",
+          "title": "재범군주",
+          "desc": "재범군주 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "www.youtube.com/@재범군주?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw8QF-34r_a98vPLkwpUKXYcVBihS6jtpX3Q&s"
+        },
+        {
+          "id": "yt3",
+          "group": "youtuber",
+          "title": "원큐",
+          "desc": "원큐 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "www.youtube.com/@원큐?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/ytc/AIdro_lB4GlM7l0VoshoGwWoo5jSFSyttTdyAWbT4GQi-jnWmQ=s900-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "yt4",
+          "group": "youtuber",
+          "title": "아이엠솔이",
+          "desc": "아이엠솔이 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "www.youtube.com/@아이엠솔이?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.ggpht.com/j9xmHD-5jPv-1RGYRj2yRktH_HAqeKnJGWg6aALLihYEwcnaJlx8EzSfiYXULYhhHCbO8PlHyOlZ4A=s1024-c-fcrop64=1,000044edffffbb03-nd-v1"
+        },
+        {
+          "id": "yt5",
+          "group": "youtuber",
+          "title": "화통TV",
+          "desc": "화통TV 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "www.youtube.com/@화통TV?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/Tj9_N-uwPLe916PFK4fXkEYEN99cFW7QmPFesdUAhR40KB9WIQGYakmRRy_o3UKIM3MUiSbH=s900-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "yt6",
+          "group": "youtuber",
+          "title": "사땅이",
+          "desc": "사땅이 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "www.youtube.com/@사땅이?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/VOUYOvCakRNBf7XjY0hDUzJvczAttuSLem_IO4DeFzT8uUCKcsMDaxpMGBcVopfuf0BBJHRI=s900-c-k-c0x00ffffff-no-rj"
         }
       ],
       "game2": [],
@@ -1094,6 +1160,7 @@
         { key: "kakao", label: "카카오톡 / 디스코드", icon: "💬" },
         { key: "sheet", label: "시트 / 데이터", icon: "📊" },
         { key: "admin", label: "관리자 / 담당자", icon: "🧑‍💼" },
+        { key: "youtuber", label: "유튜버", icon: "📺" },
         { key: "other", label: "기타", icon: "📁" }
       ];
 
@@ -1124,13 +1191,13 @@
 
         const toggleLabel = document.createElement("div");
         toggleLabel.className = "folder-toggle";
-        toggleLabel.textContent = "접기";
+        toggleLabel.textContent = "펼치기";
 
         header.appendChild(title);
         header.appendChild(toggleLabel);
 
         const body = document.createElement("div");
-        body.className = "folder-body";
+        body.className = "folder-body collapsed";
 
         const grid = document.createElement("div");
         grid.className = "grid";
