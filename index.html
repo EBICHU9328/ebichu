@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>𝓥𝓐𝓜𝓟𝓘𝓡</title>
+  <title>𝓔𝓫𝓲𝓬𝓱𝓾 Hub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
@@ -227,8 +227,8 @@
   <div class="page">
     <header>
       <div class="header-left">
-        <div class="title">𝓥𝓐𝓜𝓟𝓘𝓡</div>
-        <div class="subtitle">Ebichu Ver 1.0.1</div>
+        <div class="title" id="siteTitle">𝓥𝓐𝓜𝓟𝓘𝓡</div>
+        <div class="subtitle" id="siteSubtitle">Ebichu Ver 1.0.1</div>
       </div>
     </header>
 
@@ -243,8 +243,34 @@
   </div>
 
   <script>
-    let cards = {
-      "game1": [
+    const SITE_CONFIG = {
+      vampir: {
+        title: "𝓥𝓐𝓜𝓟𝓘𝓡",
+        subtitle: "Ebichu Ver 1.0.1"
+      },
+      dk: {
+        title: "DK",
+        subtitle: "Ebichu DK Ver 1.0.1"
+      }
+    };
+
+    const path = window.location.pathname.toLowerCase();
+    let currentGame = "vampir";
+    if (path.includes("/dk")) {
+      currentGame = "dk";
+    } else if (path.includes("/vampir")) {
+      currentGame = "vampir";
+    }
+
+    const titleEl = document.getElementById("siteTitle");
+    const subtitleEl = document.getElementById("siteSubtitle");
+    if (SITE_CONFIG[currentGame]) {
+      titleEl.textContent = SITE_CONFIG[currentGame].title;
+      subtitleEl.textContent = SITE_CONFIG[currentGame].subtitle;
+    }
+
+    const CARD_DATA = {
+      vampir: [
         {
           "id": "c1",
           "group": "sheet",
@@ -476,6 +502,129 @@
           "badgeAccent": true,
           "image": "https://yt3.googleusercontent.com/VOUYOvCakRNBf7XjY0hDUzJvczAttuSLem_IO4DeFzT8uUCKcsMDaxpMGBcVopfuf0BBJHRI=s900-c-k-c0x00ffffff-no-rj"
         }
+      ],
+      dk: [
+        {
+          "id": "dk_sheet_1",
+          "group": "sheet",
+          "title": "DK 길드 시트지 (임시)",
+          "desc": "DK 길드 시트지 자리입니다.\n나중에 DK용 시트 링크로 교체해주세요.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": true,
+          "host": "SpreadSheet",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "dk_sheet_2",
+          "group": "sheet",
+          "title": "DK 전투력/참여 시트 (임시)",
+          "desc": "전투력, 출석체크 등 DK용 데이터 시트 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "SpreadSheet",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "dk_kakao_1",
+          "group": "kakao",
+          "title": "DK 길드 공지방 (임시)",
+          "desc": "DK 공지방 오픈채팅 자리입니다.\n나중에 실제 공지방 링크를 넣어주세요.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": true,
+          "host": "KakaoTalk",
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "dk_kakao_2",
+          "group": "kakao",
+          "title": "DK 입찰/자유방 (임시)",
+          "desc": "입찰방 또는 자유방 링크 자리입니다.\n방 구성 확정 후 수정해주세요.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "KakaoTalk",
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "dk_discord",
+          "group": "kakao",
+          "title": "DK 디스코드 (임시)",
+          "desc": "DK 디스코드 서버 초대 링크 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "Discord",
+          "image": "https://cliply.co/wp-content/uploads/2021/08/372108630_DISCORD_LOGO_400.gif"
+        },
+        {
+          "id": "dk_admin_1",
+          "group": "admin",
+          "title": "[DK] 총 관리자 (임시)",
+          "desc": "DK 출금/전체 문의 담당자 프로필 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": true,
+          "host": "총 관리자",
+          "image": "https://img.daily.co.kr/@files/www.daily.co.kr/content_watermark/life/2020/20200910/4baa6e8dcc393286b6bdd7b03064fd01.gif"
+        },
+        {
+          "id": "dk_admin_2",
+          "group": "admin",
+          "title": "[DK] 길드 담당 1 (임시)",
+          "desc": "1길드 담당자 오픈프로필 자리입니다.\n실제 담당자 확정 후 수정해주세요.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "길드 담당자",
+          "image": "https://item.kakaocdn.net/do/7bd2c8ccf26fcaeaaf881d7f54deeb4bf43ad912ad8dd55b04db6a64cddaf76d"
+        },
+        {
+          "id": "dk_admin_3",
+          "group": "admin",
+          "title": "[DK] 길드 담당 2 (임시)",
+          "desc": "2길드 담당자 오픈프로필 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "길드 담당자",
+          "image": "https://i.pinimg.com/originals/58/26/fd/5826fdd334fb2ee7a0afd8ff5914f6a0.gif"
+        },
+        {
+          "id": "dk_yt_1",
+          "group": "youtuber",
+          "title": "DK 유튜버 1 (임시)",
+          "desc": "DK 관련 스트리머/유튜버 채널 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": true,
+          "host": "YouTube",
+          "image": "https://yt3.googleusercontent.com/3nuSkOggjZ5kp2I5ifEmOECboaqKJgymy0YfdEORBf-hgyLRpdziOhNUDMIoPneKp5EOoKjW=s160-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "dk_yt_2",
+          "group": "youtuber",
+          "title": "DK 유튜버 2 (임시)",
+          "desc": "추가로 넣고 싶은 DK 관련 채널 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "YouTube",
+          "image": "https://yt3.googleusercontent.com/ytc/AIdro_lB4GlM7l0VoshoGwWoo5jSFSyttTdyAWbT4GQi-jnWmQ=s900-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "dk_other_1",
+          "group": "other",
+          "title": "DK 기타 링크 (임시)",
+          "desc": "공식 홈페이지나 공략 모음 등 기타 링크를 넣을 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "Site",
+          "image": "https://play-lh.googleusercontent.com/bpiLHv_Nvsa4Iv_KIfboxKBtKM6B5n19ftEdLq8iPFvSLSvgS_xjTrf4GMMmVE28hQ"
+        }
       ]
     };
 
@@ -535,9 +684,9 @@
       return a;
     }
 
-    function renderCards() {
+    function renderCards(gameKey) {
       gridContainer.innerHTML = "";
-      const list = cards["game1"] || [];
+      const list = CARD_DATA[gameKey] || [];
 
       const groupDefs = [
         { key: "kakao", label: "카카오톡 / 디스코드", icon: "💬" },
@@ -602,7 +751,7 @@
       });
     }
 
-    renderCards();
+    renderCards(currentGame);
   </script>
 </body>
 </html>
