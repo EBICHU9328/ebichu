@@ -1,2898 +1,765 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>길드 전투력 현황판</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        /* 기존 스타일 유지 */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif; background: #ffffff; color: #1a1a1a; line-height: 1.6; }
-        .lock-banner { background: #ef4444; color: white; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; display: none; animation: slideDown 0.3s ease; }
-        .lock-banner.active { display: block; }
-        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
-        .top-bar { background: rgba(255, 255, 255, 0.95); border-bottom: 1px solid #e5e7eb; padding: 16px 24px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-        .top-bar h1 { font-size: 20px; font-weight: 600; color: #111827; letter-spacing: -0.5px; }
-        .top-actions { display: flex; gap: 12px; align-items: center; }
-        .search-input { padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; width: 180px; transition: all 0.2s; background: #f9fafb; }
-        .search-input:focus { outline: none; border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .btn-common { padding: 8px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-        .btn-user-add { background: #3b82f6; color: white; font-weight: 600; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
-        .btn-user-add:hover { background: #2563eb; transform: translateY(-1px); }
-        .btn-user-add.disabled { background: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
-        .admin-only { display: none; }
-        .super-admin-only { display: none; }
-        .btn-excel { background: #10b981; color: white; }
-        .btn-admin { background: #1f2937; color: white; position: relative; }
-        .btn-admin.logged-in { background: #4b5563; cursor: default; }
-        .btn-log { background: #f59e0b; color: white; }
-        .btn-manage { background: #6366f1; color: white; }
-        .btn-guild-add { background: #8b5cf6; color: white; }
-        .btn-lock { background: #ef4444; color: white; }
-        .btn-bulk { background: #db2777; color: white; }
-        .btn-bulk:hover { background: #be185d; }
-        .btn-approve { background: #059669; color: white; }
-        .btn-approve:hover { background: #047857; }
-        .btn-rename { background: #8b5cf6; color: white; }
-        .btn-rename:hover { background: #7c3aed; }
-        .btn-reset-pw { padding: 4px 8px; font-size: 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-reset-pw:hover { background: #dc2626; }
-        
-        /* 승인 대기 뱃지 */
-        .pending-badge { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border-radius: 10px; padding: 2px 6px; font-size: 11px; font-weight: 700; min-width: 18px; text-align: center; }
+  <meta charset="UTF-8">
+  <title>𝐕𝐀𝐌𝐏𝐈𝐑</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .container { max-width: 1280px; margin: 0 auto; padding: 40px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 24px; }
-        .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card:hover { border-color: #d1d5db; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .card-header { padding: 20px 24px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 12px; }
-        .guild-badge { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #9ca3af; }
-        .card:nth-child(4n+1) .guild-badge { background: #3b82f6; }
-        .card:nth-child(4n+2) .guild-badge { background: #10b981; }
-        .card:nth-child(4n+3) .guild-badge { background: #f59e0b; }
-        .card:nth-child(4n+4) .guild-badge { background: #ef4444; }
-        .card-header h2 { font-size: 16px; font-weight: 600; color: #111827; letter-spacing: -0.3px; }
-        .card-body { padding: 0; }
-        table { width: 100%; border-collapse: collapse; }
-        thead { background: #f9fafb; border-bottom: 1px solid #f3f4f6; }
-        th { padding: 12px 24px; font-weight: 500; color: #6b7280; font-size: 13px; text-align: left; letter-spacing: 0.3px; }
-        th:last-child { text-align: right; }
-        td { padding: 14px 24px; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: #374151; height: 60px; }
-        td:first-child { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        td:last-child { text-align: right; min-width: 120px; }
-        tbody tr { height: 60px; cursor: pointer; -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1); }
-        tbody tr:hover { background: #f0f9ff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        tbody tr:active { background: #dbeafe; }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr { border-bottom: 2px solid #e5e7eb; }
-        .rank-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; font-size: 14px; font-weight: 700; margin-right: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0; cursor: pointer; transition: transform 0.2s; }
-        .rank-number:hover { transform: scale(1.05); }
-        tbody tr:nth-child(1) .rank-number { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #92400e; box-shadow: 0 4px 6px rgba(255,215,0,0.4); }
-        tbody tr:nth-child(2) .rank-number { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); color: #57534e; box-shadow: 0 4px 6px rgba(192,192,192,0.4); }
-        tbody tr:nth-child(3) .rank-number { background: linear-gradient(135deg, #cd7f32 0%, #daa06d 100%); color: #78350f; box-shadow: 0 4px 6px rgba(205,127,50,0.4); }
-        tbody tr:nth-child(n+4) .rank-number { background: #f3f4f6; color: #374151; font-weight: 600; }
-        .player-name { 
-            font-weight: 500; 
-            color: #111827; 
-            cursor: pointer; 
-            padding: 6px 10px; 
-            border-radius: 6px; 
-            transition: all 0.2s; 
-            display: inline-block; 
-            max-width: 150px;
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            white-space: nowrap; 
-            vertical-align: middle;
-            user-select: none;
-            -webkit-tap-highlight-color: rgba(37, 99, 235, 0.1);
-        }
-        .player-name:hover { 
-            background: #e0e7ff; 
-            color: #2563eb; 
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .player-name:active {
-            transform: translateY(0);
-            background: #c7d2fe;
-        }
-        .power-value { font-weight: 600; color: #3b82f6; cursor: pointer; transition: all 0.15s ease; padding: 6px 12px; border-radius: 6px; display: inline-block; }
-        .power-value:hover { background: #eff6ff; color: #2563eb; }
-        
-        /* 전투력 블러 처리 */
-        .power-value.blurred { 
-            filter: blur(8px); 
-            user-select: none; 
-            pointer-events: none;
-            color: #9ca3af;
-        }
-        .power-value.blurred:hover {
-            background: transparent;
-        }
-        
-        /* 스펙 아이콘 스타일 */
-        .spec-icons { font-size: 12px; margin-left: 6px; color: #666; display: inline-block; cursor: pointer; }
-        
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 1000; animation: fadeIn 0.2s ease; padding: 20px; overflow-y: auto; }
-        .modal-overlay.active { display: flex; align-items: flex-start; justify-content: center; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .modal { background: #ffffff; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); max-width: 400px; width: 90%; max-height: calc(100vh - 40px); display: flex; flex-direction: column; animation: slideUp 0.3s ease; position: relative; margin: 20px auto; }
-        .modal.modal-lg { max-width: 900px; }
-        .modal-close-btn { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: none; background: #f3f4f6; border-radius: 50%; color: #6b7280; font-size: 24px; line-height: 1; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
-        .modal-close-btn:hover { background: #e5e7eb; color: #374151; transform: rotate(90deg); }
-        .modal-header { padding: 24px 24px 16px; border-bottom: 1px solid #f3f4f6; flex-shrink: 0; }
-        .modal-header h3 { font-size: 18px; font-weight: 600; color: #111827; margin-bottom: 4px; }
-        .modal-header p { font-size: 14px; color: #6b7280; margin: 0; }
-        .modal-body { padding: 24px; overflow-y: auto; flex: 1; min-height: 0; }
-        .table-scroll-container { max-height: 500px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
-        .common-table { width: 100%; font-size: 13px; }
-        .common-table th { position: sticky; top: 0; background: #f3f4f6; text-align: center; padding: 10px; }
-        .common-table td { text-align: center; padding: 8px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
-        .form-group { margin-bottom: 20px; }
-        .form-label { display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px; }
-        .form-input { width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 15px; color: #111827; transition: all 0.15s ease; }
-        .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
-        .modal-footer { padding: 16px 24px; border-top: 1px solid #f3f4f6; display: flex; gap: 12px; justify-content: flex-end; flex-shrink: 0; background: #ffffff; border-radius: 0 0 16px 16px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; }
-        .btn-cancel { background: #f3f4f6; color: #6b7280; }
-        .btn-cancel:hover { background: #e5e7eb; color: #374151; }
-        .btn-primary { background: #3b82f6; color: #ffffff; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-success { background: #10b981; color: #ffffff; }
-        .btn-success:hover { background: #059669; }
-        .btn-danger { background: #ef4444; color: #ffffff; }
-        .btn-danger:hover { background: #dc2626; }
-        .alert { position: fixed; top: 24px; right: 24px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 2000; animation: slideInRight 0.3s ease; max-width: 400px; }
-        @keyframes slideInRight { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
-        .alert-success { border-left: 4px solid #10b981; }
-        .alert-error { border-left: 4px solid #ef4444; }
-        .alert-title { font-weight: 600; color: #111827; margin-bottom: 4px; }
-        .alert-message { font-size: 14px; color: #6b7280; margin: 0; }
-        
-        /* 일괄 등록용 체크박스 스타일 */
-        .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
-        .checkbox-label { display: flex; align-items: center; font-size: 14px; cursor: pointer; background: #f3f4f6; padding: 8px 12px; border-radius: 6px; }
-        .checkbox-label input { margin-right: 8px; }
-        
-        /* 상세 정보 모달 스타일 */
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .info-item { background: #f9fafb; padding: 10px; border-radius: 8px; font-size: 14px; }
-        .info-label { color: #6b7280; font-size: 12px; display: block; margin-bottom: 4px; }
-        .info-val { font-weight: 600; color: #111827; }
-        .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 4px; }
-        .badge-on { background: #dbeafe; color: #1e40af; }
-        .badge-off { background: #f3f4f6; color: #9ca3af; }
-        .spec-count { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 4px; background: #dbeafe; color: #1e40af; }
-        .spec-count.zero { background: #f3f4f6; color: #9ca3af; }
-        .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
-        .spec-input-group { display: flex; flex-direction: column; }
-        .spec-input-group label { font-size: 13px; color: #6b7280; margin-bottom: 4px; }
-        .form-input.small { padding: 8px 12px; font-size: 14px; }
-        
-        /* 시간 입력 그룹 */
-        .time-input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  <meta property="og:title" content="𝐕𝐀𝐌𝐏𝐈𝐑">
+  <meta property="og:site_name" content="𝐕𝐀𝐌𝐏𝐈𝐑">
+  <meta property="og:description" content="뱀피르 관련 링크 모음 페이지입니다.">
+  <meta property="og:url" content="https://www.bichu.xyz">
+  <meta property="og:image" content="https://www.bichu.xyz/thumbnail.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="600">
 
-        @media (max-width: 768px) {
-            .top-bar { padding: 14px 16px; flex-direction: column; align-items: flex-start; }
-            .top-actions { width: 100%; flex-wrap: wrap; }
-            .search-input { flex-grow: 1; width: auto; }
-            .container { padding: 24px 16px; gap: 20px; }
-            
-            /* 모바일 모달 최적화 */
-            .modal-overlay { padding: 10px; align-items: flex-start; }
-            .modal { 
-                width: 95%; 
-                max-height: calc(100vh - 20px);
-                margin: 10px auto;
-                border-radius: 12px;
-            }
-            .modal.modal-lg { 
-                max-width: 95%; 
-            }
-            .modal-header { 
-                padding: 20px 16px 12px; 
-            }
-            .modal-header h3 { 
-                font-size: 16px; 
-                padding-right: 30px; /* X 버튼 공간 확보 */
-            }
-            .modal-body { 
-                padding: 16px;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-            }
-            .modal-footer { 
-                padding: 12px 16px;
-                flex-shrink: 0;
-            }
-            .modal-close-btn {
-                top: 12px;
-                right: 12px;
-                width: 28px;
-                height: 28px;
-                font-size: 20px;
-            }
-            .table-scroll-container {
-                max-height: 300px; /* 모바일에서 테이블 높이 줄이기 */
-            }
-            .btn {
-                padding: 10px 16px;
-                font-size: 13px;
-            }
-            .form-group {
-                margin-bottom: 16px; /* 모바일에서 간격 줄이기 */
-            }
-            .form-input {
-                padding: 10px 14px;
-                font-size: 14px;
-            }
-            
-            /* 모바일 테이블 최적화 */
-            td { 
-                padding: 10px 12px; /* 좌우 패딩 축소 */
-            }
-            td:first-child { 
-                max-width: 150px; /* 모바일에서 더 축소 */
-            }
-            .player-name { 
-                max-width: 80px; /* 모바일에서 더 축소 */
-                font-size: 13px;
-            }
-            .rank-number {
-                width: 24px;
-                height: 24px;
-                font-size: 12px;
-                margin-right: 8px;
-            }
-            .spec-icons {
-                font-size: 11px;
-            }
-            .power-value {
-                font-size: 13px;
-                padding: 4px 8px;
-            }
-            
-            /* 테이블 스크롤 높이 조정 */
-            .table-scroll-container { 
-                max-height: 300px; 
-            }
-            
-            /* 버튼 크기 조정 */
-            .btn { 
-                padding: 10px 16px; 
-                font-size: 13px; 
-            }
-            
-            /* 폼 입력 크기 조정 */
-            .form-input { 
-                padding: 10px 12px; 
-                font-size: 14px; 
-            }
-            
-            /* 그리드 1열로 변경 */
-            .spec-grid, .time-input-group { 
-                grid-template-columns: 1fr; 
-            }
-        }
-        @media (min-width: 1024px) { .container { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1440px) { .container { grid-template-columns: repeat(4, 1fr); max-width: 1440px; } }
-    </style>
+  <style>
+    :root {
+      --page-bg: #f3f4ff;
+      --page-text-main: #020617;
+      --page-text-sub: #374151;
+      --accent: #1d4ed8;
+      --card-bg: #ffffff;
+      --card-bg-hover: #e0ebff;
+      --card-border: #d1d5db;
+      --card-radius: 18px;
+      --shadow-main: 0 12px 32px rgba(15, 23, 42, 0.16);
+      --shadow-hover: 0 18px 44px rgba(37, 99, 235, 0.40);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--page-bg);
+      color: var(--page-text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      max-width: 960px;
+      width: 100%;
+      padding: 20px 16px 32px;
+    }
+
+    header {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .header-left { min-width: 0; }
+
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .subtitle { font-size: 13px; color: var(--page-text-sub); }
+
+    .grid-header {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .folder {
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(248, 250, 252, 0.85);
+      margin-top: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+    }
+    .folder-header {
+      width: 100%;
+      border: none;
+      outline: none;
+      padding: 10px 14px;
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.1), rgba(129, 140, 248, 0.12));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .folder-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .folder-title span {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+    }
+    .folder-toggle {
+      font-size: 11px;
+      color: #1d4ed8;
+    }
+    .folder-body {
+      padding: 10px 10px 12px;
+      border-top: 1px solid rgba(148, 163, 184, 0.4);
+    }
+    .folder-body.collapsed { display: none; }
+
+    .grid {
+      margin-top: 4px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border-radius: var(--card-radius);
+      padding: 16px 14px 14px;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+      color: var(--page-text-main);
+      box-shadow: var(--shadow-main);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+    .card:hover {
+      background: var(--card-bg-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card-main {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--page-text-sub);
+      margin-bottom: 4px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--page-text-sub);
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--page-text-main);
+      background: rgba(15, 23, 42, 0.04);
+    }
+    .badge-accent {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 11px;
+      color: var(--page-text-sub);
+      border-top: 1px solid #020617;
+      padding-top: 10px;
+      text-align: right;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 480px) {
+      .page { padding: 16px 12px 24px; }
+      .title { font-size: 20px; }
+      .card { padding: 14px 12px 12px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <div id="lockBanner" class="lock-banner">⛔ 현재 정보 수정이 잠겨있습니다</div>
+  <div class="page">
+    <header>
+      <div class="header-left">
+        <div class="title" id="siteTitle">𝓥𝓐𝓜𝓟𝓘𝓡</div>
+        <div class="subtitle" id="siteSubtitle">Ebichu Ver 1.0.1</div>
+      </div>
+    </header>
 
-    <div class="top-bar">
-        <h1>길드 전투력 현황판</h1>
-        <div class="top-actions">
-            <button id="addUserBtn" class="btn-common btn-user-add">➕ 사용자 등록</button>
-            <input type="text" id="searchInput" class="search-input" placeholder="닉네임 검색...">
-            
-            <button id="approveBtn" class="btn-common btn-approve admin-only">✅ 승인 관리 <span id="pendingBadge" class="pending-badge" style="display:none;">0</span></button>
-            <button id="bulkAddBtn" class="btn-common btn-bulk admin-only">📝 일괄 등록/이동</button>
-            <button id="spreadsheetBtn" class="btn-common admin-only" style="background:#0f9d58; color:white;">📊 스프레드시트 연동</button>
-            <button id="excelBtn" class="btn-common btn-excel admin-only"><span>📊 엑셀 다운로드</span></button>
-            <button id="sheetSyncBtn" class="btn-common btn-excel admin-only"><span>📤 구글시트 동기화</span></button>
-            <button id="guildAddBtn" class="btn-common btn-guild-add admin-only"><span>🏰 길드 추가</span></button>
-            <button id="userManageBtn" class="btn-common btn-manage admin-only">👥 유저 관리</button>
-            <button id="bulkDeleteBtn" class="btn-common admin-only" style="background:#dc2626; color:white;">🗑️ 일괄 등록 해제</button>
-            <button id="lockManageBtn" class="btn-common btn-lock admin-only">🔒 잠금 설정</button>
-            <button id="logViewBtn" class="btn-common btn-log admin-only">📝 로그 확인</button>
-            <button id="deletedUsersBtn" class="btn-common admin-only" style="background:#dc2626; color:white;">🗑️ 삭제된 사용자</button>
-            <button id="adminManageBtn" class="btn-common super-admin-only" style="background:#7c3aed; color:white; display:none;">👑 관리자 관리</button>
-            <button id="adminLoginBtn" class="btn-common btn-admin">관리자</button>
-        </div>
-    </div>
-    
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal" id="modalContent">
-            <button class="modal-close-btn" onclick="closeModal()" title="닫기">×</button>
-            <div class="modal-header">
-                <h3 id="modalTitle">제목</h3>
-                <p id="modalSubtitle">부제목</p>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
-            <div class="modal-footer" id="modalFooter">
-                <button class="btn btn-cancel" onclick="closeModal()">취소</button>
-                <button class="btn btn-primary" id="modalSubmit">확인</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="container" id="mainContainer"></div>
+    <main>
+      <div class="grid-header"></div>
+      <div id="cardGrid"></div>
+    </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, doc, getDocs, setDoc, updateDoc, getDoc, query, orderBy, limit, deleteDoc, where } 
-        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <footer>
+      © <span id="year"></span> by.ebcihu 1.0.1
+    </footer>
+  </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCrW07jxkT-I5k7LXT_IKVdw3o4s45ZRE0",
-            authDomain: "guild-power-rank.firebaseapp.com",
-            projectId: "guild-power-rank",
-            storageBucket: "guild-power-rank.firebasestorage.app",
-            messagingSenderId: "312765940928",
-            appId: "1:312765940928:web:bdf388e3cdd4f32e699925",
-            measurementId: "G-QPVZKMLS70"
-        };
+  <script>
+    const SITE_CONFIG = {
+      vampir: {
+        title: "𝓥𝓐𝓜𝓟𝓘𝓡",
+        subtitle: "Ebichu Ver 1.0.1"
+      },
+      dk: {
+        title: "DK",
+        subtitle: "Ebichu DK Ver 1.0.1"
+      }
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const path = window.location.pathname.toLowerCase();
+    let currentGame = "vampir";
+    if (path.includes("/dk")) {
+      currentGame = "dk";
+    } else if (path.includes("/vampir")) {
+      currentGame = "vampir";
+    }
 
-        // --- 전역 변수 ---
-        let allGuildData = [];
-        let guildList = []; 
-        let isAdmin = false;
-        let isSuperAdmin = false; // 최종 관리자 여부
-        let loggedInUser = null; // 현재 로그인한 사용자 닉네임
-        let lockStartTime = 0;
-        let lockEndTime = 0;
-        let spreadsheetConfig = null; // 스프레드시트 설정
-        const SUPER_ADMIN_HASH = { id: "dGpkYWxzOTMyOA==", pw: "dG5hbHM5MzI4QEA=" }; // 최종 관리자
+    const titleEl = document.getElementById("siteTitle");
+    const subtitleEl = document.getElementById("siteSubtitle");
+    if (SITE_CONFIG[currentGame]) {
+      titleEl.textContent = SITE_CONFIG[currentGame].title;
+      subtitleEl.textContent = SITE_CONFIG[currentGame].subtitle;
+    }
 
-        // --- KST 변환 함수 ---
-        function toKST(timestamp) {
-            // UTC를 KST(UTC+9)로 변환
-            return new Date(timestamp + (9 * 60 * 60 * 1000));
+    const CARD_DATA = {
+      vampir: [
+        {
+          "id": "c1",
+          "group": "sheet",
+          "title": "길드 시트지",
+          "desc": "길드 시트지로 이동합니다.\n모든 내역을 한번에 확인하세요!",
+          "url": "https://docs.google.com/spreadsheets/d/13rsaqA7GHEx4TW1WIokCzoOH6rfQ8hU5sUShMuzEeo0/edit?usp=sharing",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "SpreadSheet",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "c3",
+          "group": "sheet",
+          "title": "전투력 갱신 사이트",
+          "desc": "전투력을 갱신하는 사이트입니다.\n전투력을 직접 갱신해주세요.",
+          "url": "https://vampir-oscar2.com/",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "Site",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "c54651657",
+          "group": "sheet",
+          "title": "시트지 백업본",
+          "desc": "모든 시트지 백업본입니다.",
+          "url": "https://docs.google.com/spreadsheets/d/1xlOrsl0IENImRLPEmBFC0b4098z8TfwwPzjOMfiwZog/edit?usp=sharing",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "SpreadSheet",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "c5457",
+          "group": "sheet",
+          "title": "공지사항 백업본",
+          "desc": "길드 공지사항 백업본입니다.\n신규 가입자분들은 확인 해주세요.",
+          "url": "https://docs.google.com/document/d/1B_nuRntE82s2C4rnrof0_pGmqnqdwLmfA43tC1RSGfE/edit?usp=sharing",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "Google Docs",
+          "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZRFPPuRQ8dLgZ0tZ1fvjjWs-bfPn4FmnpvA&s"
+        },
+        {
+          "id": "c1763717017929b",
+          "group": "sheet",
+          "title": "출석체크 사이트",
+          "desc": "출석체크 정보 사이트입니다. \n아이디: vampir 비밀번호: qqwwee",
+          "url": "https://jbgj.xyz/auth/login",
+          "host": "Site",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://play-lh.googleusercontent.com/bpiLHv_Nvsa4Iv_KIfboxKBtKM6B5n19ftEdLq8iPFvSLSvgS_xjTrf4GMMmVE28hQ"
+        },
+        {
+          "id": "c2",
+          "group": "kakao",
+          "title": "길드 공지방",
+          "desc": "길드 공지방으로 이동합니다.",
+          "url": "https://open.kakao.com/o/gnYNEtZh",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "KakaoTalk",
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "c1763716681097",
+          "group": "kakao",
+          "title": "길드 입찰방",
+          "desc": "길드 입찰방으로 이동합니다.\n비밀번호는 관리자 문의",
+          "url": "https://open.kakao.com/o/gBHKh2Qh",
+          "host": "KakaoTalk",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "c1763717911647",
+          "group": "kakao",
+          "title": "길드 자유방",
+          "desc": "길드 자유방으로 이동합니다.\n비밀번호는 관리자 문의",
+          "url": "https://open.kakao.com/o/gUIwDdMh",
+          "host": "KakaoTalk",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "c7974635",
+          "group": "kakao",
+          "title": "길드 디스코드",
+          "desc": "길드 디스코드로 이동합니다.",
+          "url": "https://discord.com/invite/vampiroscar2",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "Discord",
+          "image": "https://cliply.co/wp-content/uploads/2021/08/372108630_DISCORD_LOGO_400.gif"
+        },
+        {
+          "id": "c1763716895774",
+          "group": "admin",
+          "title": "[총 관리자] 에비츄",
+          "desc": "연합 총 관리자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/sDuPL2Qh",
+          "host": "사신 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://item.kakaocdn.net/do/7bd2c8ccf26fcaeaaf881d7f54deeb4bf43ad912ad8dd55b04db6a64cddaf76d"
+        },
+        {
+          "id": "c1763717017929",
+          "group": "admin",
+          "title": "[부 관리자] 라이엇",
+          "desc": "연합 부 관리자 오픈프로필입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/sYx1LIdd",
+          "host": "사신 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://img.daily.co.kr/@files/www.daily.co.kr/content_watermark/life/2020/20200910/4baa6e8dcc393286b6bdd7b03064fd01.gif"
+        },
+        {
+          "id": "c1763717648916",
+          "group": "admin",
+          "title": "[스펙조사] 前 후보",
+          "desc": "[스펙조사] 담당자 오픈 채팅 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/saqZnp0h",
+          "host": "사신 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://mblogthumb-phinf.pstatic.net/MjAyMjA1MzBfMjM1/MDAxNjUzOTA0MDY4NDU1.AXbS-5nYAqFkHzems46IFG97RkCRRMtXiN6b9oee-L8g.8gIgRBRabFlq-vUUMCaBIL1kk6rJRqSnMaAvWRUkP2Yg.GIF.jsgmh7695/8DCD9D36-A1A6-4263-9297-4F7CAC22914F.gif?type=w800"
+        },
+        {
+          "id": "c117051788",
+          "group": "admin",
+          "title": "[유언 분배] 써준",
+          "desc": "[유언 분배] 담당자 오픈 채팅 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/me/ssjun",
+          "host": "축복 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/31/97/18/319718db6e1661a5359b36d49b5f3bc6.gif"
+        },
+        {
+          "id": "c2222288",
+          "group": "admin",
+          "title": "[아이템 분배] 우빈",
+          "desc": "[아이템 분배] 담당자 오픈 채팅 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/me/ssjun",
+          "host": "축복 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://dcimg1.dcinside.com/viewimage.php?id=26b8c229f7dd3fb360acd9a0&no=24b0d769e1d32ca73ced8ffa11d02831dfaf0852456fb219302713c4ce83ae34850274611d2e45ae39c18c278aaae266435de99f8ac2227e80cf2dc4ebbd13da464edace14f5ee7cb5af1c08103f73048d0a44"
+        },
+        {
+          "id": "c1763718298548",
+          "group": "admin",
+          "title": "[축복] 루떼",
+          "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/syb9BE1h",
+          "host": "축복 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://i.pinimg.com/originals/58/26/fd/5826fdd334fb2ee7a0afd8ff5914f6a0.gif"
+        },
+        {
+          "id": "c176548",
+          "group": "admin",
+          "title": "[놀자] 빅왕콩이 ",
+          "desc": "[축복] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/sSFe3nZh",
+          "host": "놀자 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://mblogthumb-phinf.pstatic.net/MjAxOTA5MjdfMSAg/MDAxNTY5NTkyNTg0Nzgw.keACZ65-3wA1k3TYzCP-qpn382XPDG5Nkmpdk1haxKIg.yvjdpA-LSXZVjwqIrFzkIVqNCG-capVySOmm9loSGtUg.GIF.gp981130/IMG_5620.GIF?type=w800"
+        },
+        {
+          "id": "c1763717774826",
+          "group": "admin",
+          "title": "[루비] 출렁핑",
+          "desc": "[루비] 길드 담당자 링크입니다.\n관련 문의사항은 여기로 보내주세요.",
+          "url": "https://open.kakao.com/o/sDKMyuZh",
+          "host": "루비 담당자",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "image": "https://v-llage.s3.ap-northeast-2.amazonaws.com/image/1686574500997_M159773264371516143.gif"
+        },
+        {
+          "id": "yt1",
+          "group": "youtuber",
+          "title": "빅보스",
+          "desc": "빅보스 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "https://www.youtube.com/@유튜브빅보스?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/3nuSkOggjZ5kp2I5ifEmOECboaqKJgymy0YfdEORBf-hgyLRpdziOhNUDMIoPneKp5EOoKjW=s160-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "yt2",
+          "group": "youtuber",
+          "title": "재범군주",
+          "desc": "재범군주 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "https://www.youtube.com/@재범군주?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://creators-cdn.nexon.com/creators/profile/06F46DC914BA4413352C94CB7E66C488296B3C4044B2F54D33DC1DDEB2202085"
+        },
+       {
+          "id": "yt3",
+          "group": "youtuber",
+          "title": "원큐",
+          "desc": "원큐 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "https://www.youtube.com/@원큐?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/ytc/AIdro_lB4GlM7l0VoshoGwWoo5jSFSyttTdyAWbT4GQi-jnWmQ=s900-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "yt4",
+          "group": "youtuber",
+          "title": "아이엠솔이",
+          "desc": "아이엠솔이 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "https://www.youtube.com/@아이엠솔이?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.ggpht.com/j9xmHD-5jPv-1RGYRj2yRktH_HAqeKnJGWg6aALLihYEwcnaJlx8EzSfiYXULYhhHCbO8PlHyOlZ4A=s1024-c-fcrop64=1,000044edffffbb03-nd-v1"
+        },
+        {
+          "id": "yt5",
+          "group": "youtuber",
+          "title": "화통TV",
+          "desc": "화통TV 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "https://www.youtube.com/@화통TV?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/Tj9_N-uwPLe916PFK4fXkEYEN99cFW7QmPFesdUAhR40KB9WIQGYakmRRy_o3UKIM3MUiSbH=s900-c-k-c0x00ffffff-no-rj"
+        },
+        {
+          "id": "yt6",
+          "group": "youtuber",
+          "title": "사땅이",
+          "desc": "사땅이 유튜브 바로가기\n구독 좋아요 알림설정 필수!",
+          "url": "https://www.youtube.com/@사땅이?sub_confirmation=1",
+          "host": "YouTube",
+          "badge": "구독하러 가기",
+          "badgeAccent": true,
+          "image": "https://yt3.googleusercontent.com/VOUYOvCakRNBf7XjY0hDUzJvczAttuSLem_IO4DeFzT8uUCKcsMDaxpMGBcVopfuf0BBJHRI=s900-c-k-c0x00ffffff-no-rj"
         }
-
-        function fromKST(dateString) {
-            // KST datetime-local 입력값을 UTC timestamp로 변환
-            const kstDate = new Date(dateString);
-            return kstDate.getTime() - (9 * 60 * 60 * 1000);
+      ],
+      dk: [
+        {
+          "id": "dk_sheet_1",
+          "group": "sheet",
+          "title": "DK 길드 시트지",
+          "desc": "길드 시트지에서 모든 정보를 한눈에 확인하세요!",
+          "url": "https://docs.google.com/spreadsheets/d/1bMSkb8RET2zeqlFtnzcg2UuRnaM6y86gUM41jCORRa8/edit?usp=sharing",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "SpreadSheet",
+          "image": "https://img.icons8.com/fluent/1200/google-sheets--v1.jpg"
+        },
+        {
+          "id": "dk_kakao_1",
+          "group": "kakao",
+          "title": "길드 공지방",
+          "desc": "길드 공지방으로 이동합니다.\n비밀번호는 관리자에게 문의해주세요.",
+          "url": "https://open.kakao.com/o/g6gFSC4h",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "KakaoTalk",
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "dk_kakao_2",
+          "group": "kakao",
+          "title": "길드 자유방",
+          "desc": "길드 자유방으로 이동합니다.\n비밀번호는 관리자에게 문의해주세요.",
+          "url": "https://open.kakao.com/o/gBx7N93h",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "KakaoTalk",
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/2048px-KakaoTalk_logo.svg.png"
+        },
+        {
+          "id": "dk_discord",
+          "group": "kakao",
+          "title": "길드 디스코드",
+          "desc": "길드 디스코드로 이동합니다.",
+          "url": "#",
+          "badge": "새 창으로 열림",
+          "badgeAccent": true,
+          "host": "Discord",
+          "image": "https://cliply.co/wp-content/uploads/2021/08/372108630_DISCORD_LOGO_400.gif"
+        },
+        {
+          "id": "dk_admin_1",
+          "group": "admin",
+          "title": "[DK] 총 관리자 (임시)",
+          "desc": "DK 출금/전체 문의 담당자 프로필 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": true,
+          "host": "총 관리자",
+          "image": "https://img.daily.co.kr/@files/www.daily.co.kr/content_watermark/life/2020/20200910/4baa6e8dcc393286b6bdd7b03064fd01.gif"
+        },
+        {
+          "id": "dk_admin_2",
+          "group": "admin",
+          "title": "[DK] 길드 담당 1 (임시)",
+          "desc": "1길드 담당자 오픈프로필 자리입니다.\n실제 담당자 확정 후 수정해주세요.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "길드 담당자",
+          "image": "https://item.kakaocdn.net/do/7bd2c8ccf26fcaeaaf881d7f54deeb4bf43ad912ad8dd55b04db6a64cddaf76d"
+        },
+        {
+          "id": "dk_admin_3",
+          "group": "admin",
+          "title": "[DK] 길드 담당 2 (임시)",
+          "desc": "2길드 담당자 오픈프로필 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "길드 담당자",
+          "image": "https://i.pinimg.com/originals/58/26/fd/5826fdd334fb2ee7a0afd8ff5914f6a0.gif"
+        },
+        {
+          "id": "dk_yt_1",
+          "group": "youtuber",
+          "title": "재범군주",
+          "desc": "DK 관련 스트리머/유튜버 채널 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": true,
+          "host": "YouTube",
+          "image": "https://creators-cdn.nexon.com/creators/profile/06F46DC914BA4413352C94CB7E66C488296B3C4044B2F54D33DC1DDEB2202085"
+        },
+        {
+          "id": "dk_yt_2",
+          "group": "youtuber",
+          "title": "DK 유튜버 2 (임시)",
+          "desc": "추가로 넣고 싶은 DK 관련 채널 자리입니다.",
+          "url": "#",
+          "badge": "임시 링크",
+          "badgeAccent": false,
+          "host": "YouTube",
+          "image": "https://yt3.googleusercontent.com/ytc/AIdro_lB4GlM7l0VoshoGwWoo5jSFSyttTdyAWbT4GQi-jnWmQ=s900-c-k-c0x00ffffff-no-rj"
         }
+      ]
+    };
 
-        function formatKSTDateTime(timestamp) {
-            const kstDate = toKST(timestamp);
-            const year = kstDate.getUTCFullYear();
-            const month = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
-            const day = String(kstDate.getUTCDate()).padStart(2, '0');
-            const hours = String(kstDate.getUTCHours()).padStart(2, '0');
-            const minutes = String(kstDate.getUTCMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hours}:${minutes}`;
-        }
+    const gridContainer = document.getElementById("cardGrid");
+    document.getElementById("year").textContent = new Date().getFullYear();
 
-        function toDatetimeLocalValue(timestamp) {
-            const kstDate = toKST(timestamp);
-            const year = kstDate.getUTCFullYear();
-            const month = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
-            const day = String(kstDate.getUTCDate()).padStart(2, '0');
-            const hours = String(kstDate.getUTCHours()).padStart(2, '0');
-            const minutes = String(kstDate.getUTCMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
+    function createCardElement(card) {
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = card.url || "#";
+      a.target = "_blank";
+      a.rel = "noopener";
 
-        // --- 초기화 ---
-        async function init() {
-            if (sessionStorage.getItem('isAdmin') === 'true') { 
-                isAdmin = true;
-                if (sessionStorage.getItem('isSuperAdmin') === 'true') {
-                    isSuperAdmin = true;
-                }
-                updateAdminUI(); 
-                await checkPendingUsers(); // 승인 대기 유저 확인
-            }
-            
-            // 자동 로그인 체크
-            await checkAutoLogin();
-            
-            await checkLockStatus();
-            await loadSpreadsheetConfig(); // 스프레드시트 설정 로드
-            await loadData();
-        }
-        
-        // 자동 로그인 체크
-        async function checkAutoLogin() {
-            const autoLogin = localStorage.getItem('autoLogin');
-            if (autoLogin) {
-                try {
-                    const data = JSON.parse(autoLogin);
-                    const userDoc = await getDoc(doc(db, "users", data.username));
-                    
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        // 비밀번호가 일치하면 자동 로그인
-                        if (userData.password === data.password) {
-                            loggedInUser = data.username;
-                            console.log('자동 로그인:', loggedInUser);
-                        } else {
-                            // 비밀번호가 변경되었으면 자동 로그인 해제
-                            localStorage.removeItem('autoLogin');
-                        }
-                    } else {
-                        // 사용자가 삭제되었으면 자동 로그인 해제
-                        localStorage.removeItem('autoLogin');
-                    }
-                } catch (e) {
-                    console.error('자동 로그인 에러:', e);
-                    localStorage.removeItem('autoLogin');
-                }
-            }
-        }
+      const main = document.createElement("div");
+      main.className = "card-main";
 
-        async function loadSpreadsheetConfig() {
-            try {
-                const docRef = doc(db, "config", "spreadsheet");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    spreadsheetConfig = docSnap.data();
-                }
-            } catch (e) {
-                console.log("Spreadsheet config error", e);
-            }
-        }
+      if (card.image) {
+        const icon = document.createElement("div");
+        icon.className = "card-icon";
+        const img = document.createElement("img");
+        img.src = card.image;
+        icon.appendChild(img);
+        main.appendChild(icon);
+      }
 
-        async function checkLockStatus() {
-            try {
-                const docRef = doc(db, "config", "system");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    lockStartTime = data.lockStartTime || 0;
-                    lockEndTime = data.lockEndTime || 0;
-                }
-                updateLockUI();
-            } catch (e) { console.log("Config error", e); }
-        }
+      const textWrap = document.createElement("div");
+      textWrap.className = "card-text";
 
-        function isSystemLocked() { 
-            const now = Date.now();
-            return (lockStartTime > 0 && lockEndTime > 0 && now >= lockStartTime && now <= lockEndTime); 
-        }
+      const titleEl = document.createElement("div");
+      titleEl.className = "card-title";
+      titleEl.textContent = card.title || "";
 
-        function updateLockUI() {
-            const banner = document.getElementById('lockBanner');
-            const addUserBtn = document.getElementById('addUserBtn');
-            if (isSystemLocked() && !isAdmin) {
-                banner.classList.add('active');
-                addUserBtn.classList.add('disabled');
-                const remainMs = lockEndTime - Date.now();
-                const remainHours = Math.ceil(remainMs / (1000 * 60 * 60));
-                banner.innerText = `⛔ 관리자가 수정 잠금을 하여 수정이 불가능합니다 | 기간: ${formatKSTDateTime(lockStartTime)} ~ ${formatKSTDateTime(lockEndTime)} (약 ${remainHours}시간 남음)`;
-            } else {
-                banner.classList.remove('active');
-                addUserBtn.classList.remove('disabled');
-            }
-        }
+      const descEl = document.createElement("div");
+      descEl.className = "card-desc";
+      descEl.textContent = card.desc || "";
 
-        async function checkPendingUsers() {
-            if (!isAdmin) return;
-            const q = query(collection(db, "pendingUsers"));
-            const snapshot = await getDocs(q);
-            const count = snapshot.size;
-            
-            const badge = document.getElementById('pendingBadge');
-            if (count > 0) {
-                badge.textContent = count;
-                badge.style.display = 'block';
-                showAlert(`승인 요청이 ${count}개 도착하였습니다`, 'success');
-            } else {
-                badge.style.display = 'none';
-            }
-        }
+      textWrap.appendChild(titleEl);
+      textWrap.appendChild(descEl);
+      main.appendChild(textWrap);
 
-        function updateAdminUI() {
-            if(isAdmin) {
-                const btn = document.getElementById('adminLoginBtn');
-                btn.textContent = isSuperAdmin ? '최종관리자님' : '관리자님'; 
-                btn.classList.add('logged-in');
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-flex');
-                // 슈퍼 관리자 전용 UI
-                if(isSuperAdmin) {
-                    document.querySelectorAll('.super-admin-only').forEach(el => el.style.display = 'inline-flex');
-                }
-                updateLockUI();
-            }
-        }
+      const meta = document.createElement("div");
+      meta.className = "card-meta";
 
-        const formatDateTime = (d) => {
-            const date = toKST(d);
-            return `${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,'0')}-${String(date.getUTCDate()).padStart(2,'0')} ` +
-                   `${String(date.getUTCHours()).padStart(2,'0')}:${String(date.getUTCMinutes()).padStart(2,'0')}:${String(date.getUTCSeconds()).padStart(2,'0')}`;
-        };
+      const badgeEl = document.createElement("div");
+      badgeEl.className = "badge" + (card.badgeAccent ? " badge-accent" : "");
+      badgeEl.textContent = card.badge || "";
 
-        async function getIp() { try { const res = await fetch('https://api.ipify.org?format=json'); return (await res.json()).ip; } catch (e) { return 'unknown'; } }
+      const hostEl = document.createElement("div");
+      hostEl.textContent = card.host || "";
 
-        async function fetchGuildList() {
-            const docRef = doc(db, "config", "guilds");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) { guildList = docSnap.data().names || []; } 
-            else { guildList = ['사신', '축복', '놀자', '루비']; await setDoc(docRef, { names: guildList }); }
-        }
+      meta.appendChild(badgeEl);
+      meta.appendChild(hostEl);
 
-        async function loadData() {
-            await fetchGuildList();
-            const container = document.getElementById('mainContainer'); 
-            container.innerHTML = '';
-            
-            guildList.forEach(guildName => {
-                const card = document.createElement('div'); 
-                card.className = 'card';
-                card.innerHTML = `<div class="card-header"><div class="guild-badge"></div><h2>${guildName}</h2></div>
-                    <div class="card-body"><table><thead><tr><th>플레이어</th><th>전투력</th></tr></thead><tbody id="list-${guildName}"></tbody></table></div>`;
-                container.appendChild(card);
-            });
+      a.appendChild(main);
+      a.appendChild(meta);
 
-            const querySnapshot = await getDocs(collection(db, "users"));
-            const guildData = {}; 
-            guildList.forEach(g => guildData[g] = []); 
-            allGuildData = [];
+      return a;
+    }
 
-            if (querySnapshot.empty) { await initializeDatabase(); return; }
+    function renderCards(gameKey) {
+      gridContainer.innerHTML = "";
+      const list = CARD_DATA[gameKey] || [];
 
-            querySnapshot.forEach((docSnap) => {
-                const user = docSnap.data();
-                user.shape_legend = typeof user.shape_legend === 'number' ? user.shape_legend : (user.shape_legend ? 1 : 0);
-                user.shape_myth = typeof user.shape_myth === 'number' ? user.shape_myth : (user.shape_myth ? 1 : 0);
-                user.mount_legend = typeof user.mount_legend === 'number' ? user.mount_legend : (user.mount_legend ? 1 : 0);
-                user.mount_myth = typeof user.mount_myth === 'number' ? user.mount_myth : (user.mount_myth ? 1 : 0);
+      const groupDefs = [
+        { key: "kakao", label: "카카오톡 / 디스코드", icon: "💬" },
+        { key: "sheet", label: "시트 / 데이터", icon: "📊" },
+        { key: "admin", label: "관리자 / 담당자", icon: "🧑‍💼" },
+        { key: "youtuber", label: "유튜버", icon: "📺" },
+      ];
 
-                if (guildData[user.guild] !== undefined) guildData[user.guild].push(user);
-                else if (guildList.includes(user.guild)) guildData[user.guild] = [user];
-            });
+      const grouped = {};
+      list.forEach(function (card) {
+        const g = card.group || "other";
+        if (!grouped[g]) grouped[g] = [];
+        grouped[g].push(card);
+      });
 
-            Object.keys(guildData).forEach(guildName => {
-                const users = guildData[guildName].sort((a, b) => b.power - a.power);
-                allGuildData.push(...users);
-                const tbody = document.getElementById(`list-${guildName}`);
-                if(tbody) {
-                    users.forEach((user, index) => {
-                        const tr = document.createElement('tr');
-                        let icons = "";
-                        if(user.shape_legend > 0) icons += "🛡️";
-                        if(user.shape_myth > 0) icons += "👑";
-                        if(user.mount_legend > 0) icons += "🐴";
-                        if(user.mount_myth > 0) icons += "🦄";
-                        
-                        // 블러 처리: 관리자가 아니고, 본인이 아니면 블러
-                        const shouldBlur = !isAdmin && (loggedInUser !== user.name);
-                        const blurClass = shouldBlur ? ' blurred' : '';
-                        
-                        tr.innerHTML = `<td><span class="rank-number">${index + 1}</span><span class="player-name" title="${user.name}">${user.name}</span> <span class="spec-icons">${icons}</span></td>
-                            <td><span class="power-value${blurClass}">${user.power.toLocaleString()}</span></td>`;
-                        
-                        // Row 전체에 클릭 이벤트 (닉네임 클릭용)
-                        tr.style.cursor = 'pointer';
-                        tr.addEventListener('click', (e) => {
-                            // 전투력을 클릭한 경우가 아니면 상세 정보 표시
-                            if (!e.target.classList.contains('power-value')) {
-                                showUserInfo(user.name);
-                            }
-                        });
-                        
-                        // 전투력만 별도 이벤트 (전투력 수정용)
-                        const powerValueSpan = tr.querySelector('.power-value');
-                        powerValueSpan.addEventListener('click', (e) => {
-                            e.stopPropagation(); // row 클릭 이벤트 중단
-                            handlePowerClick(user.name);
-                        });
-                        
-                        tbody.appendChild(tr);
-                    });
-                }
-            });
-        }
+      groupDefs.forEach(function (g) {
+        const items = grouped[g.key];
+        if (!items || !items.length) return;
 
-        // --- 기능: 사용자 조회 및 상세 보기 ---
-        async function showUserInfo(name) {
-            const docRef = doc(db, "users", name);
-            const snap = await getDoc(docRef);
-            if(!snap.exists()) return;
-            const u = snap.data();
+        const folder = document.createElement("div");
+        folder.className = "folder";
 
-            // 블러 처리 여부 결정
-            const isBlurred = !isAdmin && (loggedInUser !== name);
+        const header = document.createElement("button");
+        header.type = "button";
+        header.className = "folder-header";
 
-            const showCount = (count) => {
-                if (count > 0) {
-                    return `<span class="spec-count">${count}개</span>`;
-                } else {
-                    return `<span class="spec-count zero">없음</span>`;
-                }
-            };
+        const title = document.createElement("div");
+        title.className = "folder-title";
+        title.innerHTML = g.icon + " " + g.label;
+        const chip = document.createElement("span");
+        chip.textContent = items.length + "개";
+        title.appendChild(chip);
 
-            // 갱신일 포맷팅 (관리자만 표시)
-            let updatedInfo = '';
-            if (isAdmin && u.updatedAt) {
-                const updatedDate = formatDateTime(u.updatedAt);
-                const isAdminUpdate = u.updatedBy === 'admin';
-                updatedInfo = `<p style="font-size:12px; color:#6b7280; margin-top:8px;">갱신일: ${updatedDate}${isAdminUpdate ? ' (관리자)' : ''}</p>`;
-            }
+        const toggleLabel = document.createElement("div");
+        toggleLabel.className = "folder-toggle";
+        toggleLabel.textContent = "펼치기";
 
-            // 닉네임 변경 버튼은 관리자만 표시
-            const renameButton = isAdmin ? `<button class="btn btn-rename" onclick="window.openRenameModal('${name}')" style="flex:1">🔄 닉네임 변경</button>` : '';
+        header.appendChild(title);
+        header.appendChild(toggleLabel);
 
-            const content = `
-                <div class="info-grid">
-                    <div class="info-item"><span class="info-label">길드</span><span class="info-val">${u.guild}</span></div>
-                    <div class="info-item">
-                        <span class="info-label">전투력</span>
-                        <span class="info-val ${isBlurred ? 'power-value blurred' : ''}" ${isBlurred ? 'title="로그인 후 확인 가능"' : ''}>
-                            ${isBlurred ? '••••••' : u.power.toLocaleString()}
-                        </span>
-                    </div>
-                </div>
-                ${updatedInfo}
-                <div class="info-grid" style="margin-top:10px; padding-top:10px; border-top:1px dashed #ddd;">
-                    <div class="info-item"><span class="info-label">🛡️ 형상 전설</span>${showCount(u.shape_legend || 0)}</div>
-                    <div class="info-item"><span class="info-label">👑 형상 신화</span>${showCount(u.shape_myth || 0)}</div>
-                    <div class="info-item"><span class="info-label">🐴 탈것 전설</span>${showCount(u.mount_legend || 0)}</div>
-                    <div class="info-item"><span class="info-label">🦄 탈것 신화</span>${showCount(u.mount_myth || 0)}</div>
-                </div>
-                <p style="font-size:12px; color:#6b7280; margin-top:12px; text-align:center;">※ 스펙 개수는 관리자가 설정합니다</p>
-                <div style="display: flex; gap: 8px; margin-top: 16px;">
-                    <button class="btn btn-primary" onclick="window.editUserFromInfo('${name}')" style="flex:1">✏️ 정보 수정</button>
-                    ${renameButton}
-                </div>
-            `;
-            
-            openSmallModal('상세 정보', u.name, content);
-            document.getElementById('modalFooter').style.display = 'none';
-        }
+        const body = document.createElement("div");
+        body.className = "folder-body collapsed";
 
-        // --- 닉네임 변경 기능 (관리자 전용) ---
-        window.openRenameModal = async function(oldName) {
-            if (!isAdmin) {
-                showAlert('❌ 닉네임 변경은 관리자만 가능합니다', 'error');
-                return;
-            }
+        const grid = document.createElement("div");
+        grid.className = "grid";
 
-            openSmallModal('닉네임 변경 (관리자 전용)', `현재: ${oldName}`, `
-                <div class="form-group">
-                    <label class="form-label">새 닉네임</label>
-                    <input type="text" id="newNickname" class="form-input" placeholder="새로운 닉네임 입력">
-                </div>
-                <p style="font-size:12px; color:#ef4444; margin-top:8px;">⚠️ 닉네임을 변경하면 이전 닉네임으로는 로그인할 수 없습니다.</p>
-            `);
-
-            setTimeout(() => document.getElementById('newNickname').focus(), 100);
-
-            document.getElementById('modalSubmit').onclick = async () => {
-                const newName = document.getElementById('newNickname').value.trim();
-                
-                if (!newName) {
-                    showAlert('닉네임을 입력하세요', 'error');
-                    return;
-                }
-
-                if (newName === oldName) {
-                    showAlert('동일한 닉네임입니다', 'error');
-                    return;
-                }
-
-                // 중복 체크
-                const checkDoc = await getDoc(doc(db, "users", newName));
-                if (checkDoc.exists()) {
-                    showAlert('이미 존재하는 닉네임입니다', 'error');
-                    return;
-                }
-
-                try {
-                    // 기존 데이터 가져오기
-                    const oldDocRef = doc(db, "users", oldName);
-                    const oldDocSnap = await getDoc(oldDocRef);
-                    const userData = oldDocSnap.data();
-
-                    // 새 닉네임으로 문서 생성
-                    userData.name = newName;
-                    await setDoc(doc(db, "users", newName), userData);
-
-                    // 기존 문서 삭제
-                    await deleteDoc(oldDocRef);
-
-                    // 로그 기록
-                    await setDoc(doc(collection(db, "logs")), {
-                        who: `${oldName} → ${newName}`,
-                        type: 'nickname_change',
-                        old_value: oldName,
-                        new_value: newName,
-                        createdAt: Date.now(),
-                        ip: await getIp(),
-                        device: navigator.userAgent,
-                        admin: true
-                    });
-
-                    showAlert(`닉네임이 변경되었습니다: ${oldName} → ${newName}`, 'success');
-                    closeModal();
-                    setTimeout(async () => {
-                        await loadData();
-                        await autoSyncIfEnabled(userData.guild);
-                    }, 500);
-                } catch (e) {
-                    console.error(e);
-                    showAlert('오류가 발생했습니다', 'error');
-                }
-            };
-        };
-
-        // --- 기능: 사용자 등록 (승인 대기 상태로) ---
-        document.getElementById('addUserBtn').addEventListener('click', () => {
-            if (isSystemLocked() && !isAdmin) { 
-                const lockMsg = `관리자가 수정 잠금을 하여 수정이 불가능합니다.\n\n기간: ${formatKSTDateTime(lockStartTime)} ~ ${formatKSTDateTime(lockEndTime)} (KST)`;
-                showAlert(lockMsg, 'error'); 
-                return; 
-            }
-            
-            const guildOptions = guildList.map(g => `<option value="${g}">${g}</option>`).join('');
-            openSmallModal('사용자 등록', '신규 유저 등록 (관리자 승인 필요)', `
-                <div class="form-group"><label class="form-label">길드 선택</label><select id="newUserGuild" class="form-input">${guildOptions}</select></div>
-                <div class="form-group"><label class="form-label">닉네임</label><input type="text" id="newUserName" class="form-input" placeholder="닉네임"></div>
-                <div class="form-group"><label class="form-label">전투력 (숫자만)</label><input type="text" id="newUserPower" class="form-input" placeholder="예: 1200000" inputmode="numeric"></div>
-                <div class="form-group"><label class="form-label">비밀번호 (4자리)</label><input type="password" id="newUserPw" class="form-input" maxlength="4" inputmode="numeric" placeholder="본인인증용"></div>
-                <p style="font-size:12px; color:#6b7280; margin-top:-10px;">※ 등록 후 관리자 승인이 필요합니다</p>
-            `);
-
-            document.getElementById('modalSubmit').onclick = async () => {
-                const guild = document.getElementById('newUserGuild').value;
-                const name = document.getElementById('newUserName').value.trim();
-                const powerStr = document.getElementById('newUserPower').value.replace(/,/g, "");
-                const pw = document.getElementById('newUserPw').value;
-
-                if(!name || isNaN(powerStr) || !powerStr || !/^\d{4}$/.test(pw)) { 
-                    showAlert('입력값을 확인하세요 (비밀번호는 4자리 숫자)', 'error'); 
-                    return; 
-                }
-
-                // 중복 체크 (users + pendingUsers 모두)
-                const userDocRef = doc(db, "users", name);
-                const pendingDocRef = doc(db, "pendingUsers", name);
-                const [userSnap, pendingSnap] = await Promise.all([
-                    getDoc(userDocRef),
-                    getDoc(pendingDocRef)
-                ]);
-
-                if (userSnap.exists() || pendingSnap.exists()) { 
-                    showAlert('이미 존재하거나 승인 대기 중인 닉네임입니다', 'error'); 
-                    return; 
-                }
-
-                try {
-                    const power = Number(powerStr);
-                    // 승인 대기 상태로 저장
-                    await setDoc(pendingDocRef, { 
-                        guild, 
-                        name, 
-                        power, 
-                        password: pw,
-                        shape_legend: 0, 
-                        shape_myth: 0,
-                        mount_legend: 0, 
-                        mount_myth: 0,
-                        requestedAt: Date.now(),
-                        ip: await getIp()
-                    });
-                    
-                    await setDoc(doc(collection(db, "logs")), { 
-                        who: name, 
-                        type: 'user_request', 
-                        old_value: '-', 
-                        new_value: `등록요청(${guild})`, 
-                        createdAt: Date.now(), 
-                        ip: await getIp(), 
-                        device: navigator.userAgent 
-                    });
-                    
-                    showAlert(`${name}님 등록이 요청되었습니다!\n관리자 승인 후 사용 가능합니다.`, 'success'); 
-                    closeModal();
-                } catch(e) { 
-                    console.error(e); 
-                    showAlert('오류 발생', 'error'); 
-                }
-            };
+        items.forEach(function (card) {
+          grid.appendChild(createCardElement(card));
         });
 
-        // --- 승인 관리 기능 ---
-        document.getElementById('approveBtn').addEventListener('click', async () => {
-            if (!isAdmin) return;
+        body.appendChild(grid);
 
-            openLargeModal('승인 관리', '등록 요청 목록');
-            
-            const q = query(collection(db, "pendingUsers"), orderBy("requestedAt", "desc"));
-            const snapshot = await getDocs(q);
-            
-            if (snapshot.empty) {
-                setModalBody('<div style="text-align:center; padding:40px; color:#9ca3af;">승인 대기 중인 사용자가 없습니다</div>');
-                return;
-            }
-
-            let html = '<div class="table-scroll-container"><table class="common-table"><thead><tr><th>요청시간</th><th>닉네임</th><th>길드</th><th>전투력</th><th>관리</th></tr></thead><tbody>';
-            
-            snapshot.forEach(docSnap => {
-                const u = docSnap.data();
-                html += `<tr>
-                    <td>${formatDateTime(u.requestedAt)}</td>
-                    <td><strong>${u.name}</strong></td>
-                    <td>${u.guild}</td>
-                    <td>${u.power.toLocaleString()}</td>
-                    <td>
-                        <button class="btn btn-success" onclick="window.approveUser('${u.name}')" style="padding:6px 12px; font-size:12px; margin-right:4px;">승인</button>
-                        <button class="btn btn-danger" onclick="window.rejectUser('${u.name}')" style="padding:6px 12px; font-size:12px;">거부</button>
-                    </td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table></div>';
-            setModalBody(html);
+        header.addEventListener("click", function () {
+          const collapsed = body.classList.toggle("collapsed");
+          toggleLabel.textContent = collapsed ? "펼치기" : "접기";
         });
 
-        // 승인 처리
-        window.approveUser = async function(name) {
-            if (!await showConfirm('사용자 승인', `[${name}]님의 등록을 승인하시겠습니까?`)) return;
-
-            try {
-                const pendingRef = doc(db, "pendingUsers", name);
-                const pendingSnap = await getDoc(pendingRef);
-                
-                if (!pendingSnap.exists()) {
-                    showAlert('해당 요청을 찾을 수 없습니다', 'error');
-                    return;
-                }
-
-                const userData = pendingSnap.data();
-                
-                // users 컬렉션에 추가
-                await setDoc(doc(db, "users", name), userData);
-                
-                // pendingUsers에서 삭제
-                await deleteDoc(pendingRef);
-                
-                // 로그 기록
-                await setDoc(doc(collection(db, "logs")), {
-                    who: name,
-                    type: 'user_approved',
-                    old_value: '승인대기',
-                    new_value: '승인완료',
-                    createdAt: Date.now(),
-                    ip: await getIp(),
-                    device: navigator.userAgent
-                });
-
-                showAlert(`${name}님이 승인되었습니다`, 'success');
-                closeModal();
-                await checkPendingUsers();
-                setTimeout(async () => {
-                    await loadData();
-                    await autoSyncIfEnabled(userData.guild);
-                }, 500);
-            } catch (e) {
-                console.error(e);
-                showAlert('오류 발생', 'error');
-            }
-        };
-
-        // 거부 처리
-        window.rejectUser = async function(name) {
-            if (!await showConfirm('등록 거부', `[${name}]님의 등록을 거부하시겠습니까?<br><span style="color:#ef4444;">이 작업은 취소할 수 없습니다.</span>`)) return;
-
-            try {
-                const pendingRef = doc(db, "pendingUsers", name);
-                await deleteDoc(pendingRef);
-                
-                await setDoc(doc(collection(db, "logs")), {
-                    who: name,
-                    type: 'user_rejected',
-                    old_value: '승인대기',
-                    new_value: '거부됨',
-                    createdAt: Date.now(),
-                    ip: await getIp(),
-                    device: navigator.userAgent
-                });
-
-                showAlert(`${name}님의 등록이 거부되었습니다`, 'success');
-                closeModal();
-                await checkPendingUsers();
-            } catch (e) {
-                console.error(e);
-                showAlert('오류 발생', 'error');
-            }
-        };
-
-        // --- 기능: 유저 전체 정보 수정 (스펙 포함) ---
-        function openUserEditModal(u) {
-            const guildOptions = guildList.map(g => `<option value="${g}" ${g===u.guild?'selected':''}>${g}</option>`).join('');
-            
-            let specSection = '';
-            if (isAdmin) {
-                specSection = `
-                    <div class="form-group"><label class="form-label">보유 스펙 (관리자 전용 - 개수 입력)</label>
-                        <div class="spec-grid">
-                            <div class="spec-input-group">
-                                <label>🛡️ 형상 전설</label>
-                                <input type="number" class="form-input small" id="eSL" value="${u.shape_legend || 0}" min="0" max="99">
-                            </div>
-                            <div class="spec-input-group">
-                                <label>👑 형상 신화</label>
-                                <input type="number" class="form-input small" id="eSM" value="${u.shape_myth || 0}" min="0" max="99">
-                            </div>
-                            <div class="spec-input-group">
-                                <label>🐴 탈것 전설</label>
-                                <input type="number" class="form-input small" id="eML" value="${u.mount_legend || 0}" min="0" max="99">
-                            </div>
-                            <div class="spec-input-group">
-                                <label>🦄 탈것 신화</label>
-                                <input type="number" class="form-input small" id="eMM" value="${u.mount_myth || 0}" min="0" max="99">
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                const showCount = (count) => count > 0 ? `<span class="spec-count">${count}개</span>` : `<span class="spec-count zero">없음</span>`;
-                specSection = `
-                    <div class="form-group"><label class="form-label">보유 스펙 (조회 전용)</label>
-                        <div class="info-grid" style="margin-top:10px;">
-                            <div class="info-item"><span class="info-label">🛡️ 형상 전설</span>${showCount(u.shape_legend || 0)}</div>
-                            <div class="info-item"><span class="info-label">👑 형상 신화</span>${showCount(u.shape_myth || 0)}</div>
-                            <div class="info-item"><span class="info-label">🐴 탈것 전설</span>${showCount(u.mount_legend || 0)}</div>
-                            <div class="info-item"><span class="info-label">🦄 탈것 신화</span>${showCount(u.mount_myth || 0)}</div>
-                        </div>
-                        <p style="font-size:12px; color:#6b7280; margin-top:8px;">※ 스펙 개수는 관리자가 설정합니다</p>
-                    </div>
-                `;
-            }
-            
-            const html = `
-                <div class="form-group"><label class="form-label">길드</label><select id="editGuild" class="form-input">${guildOptions}</select></div>
-                <div class="form-group"><label class="form-label">전투력</label><input type="text" id="editPower" class="form-input" value="${u.power}"></div>
-                ${specSection}
-            `;
-            openSmallModal('정보 수정', u.name, html);
-
-            document.getElementById('modalSubmit').innerText = "수정 완료";
-            document.getElementById('modalSubmit').onclick = async () => {
-                const nGuild = document.getElementById('editGuild').value;
-                const nPower = Number(document.getElementById('editPower').value.replace(/,/g,""));
-                
-                let newData = {
-                    guild: nGuild,
-                    power: nPower,
-                    updatedAt: Date.now(),
-                    updatedBy: isAdmin ? 'admin' : 'user'
-                };
-                
-                if (isAdmin) {
-                    newData.shape_legend = Number(document.getElementById('eSL').value) || 0;
-                    newData.shape_myth = Number(document.getElementById('eSM').value) || 0;
-                    newData.mount_legend = Number(document.getElementById('eML').value) || 0;
-                    newData.mount_myth = Number(document.getElementById('eMM').value) || 0;
-                }
-
-                await updateDoc(doc(db, "users", u.name), newData);
-                await setDoc(doc(collection(db, "logs")), { 
-                    who: u.name, 
-                    type: 'info_edit', 
-                    old_value: '수정됨', 
-                    new_value: isAdmin ? '관리자수정' : '일반수정', 
-                    createdAt: Date.now(), 
-                    ip: await getIp(),
-                    device: navigator.userAgent
-                });
-                
-                showAlert('수정되었습니다', 'success');
-                closeModal();
-                setTimeout(async () => {
-                    await loadData();
-                    await autoSyncIfEnabled(nGuild);
-                }, 500);
-            };
-        }
-
-        // --- 관리자: 일괄 등록 기능 ---
-        document.getElementById('bulkAddBtn').addEventListener('click', () => {
-            if(!isAdmin) return;
-            const guildOptions = guildList.map(g => `<option value="${g}">${g}</option>`).join('');
-            
-            const html = `
-                <div class="form-group"><label class="form-label">1. 이동시킬 길드 선택</label><select id="bulkGuild" class="form-input">${guildOptions}</select></div>
-                <div class="form-group"><label class="form-label">2. 부여할 스펙 개수</label>
-                    <div class="spec-grid">
-                        <div class="spec-input-group">
-                            <label>🛡️ 형상 전설</label>
-                            <input type="number" class="form-input small" id="bSL" value="0" min="0" max="99">
-                        </div>
-                        <div class="spec-input-group">
-                            <label>👑 형상 신화</label>
-                            <input type="number" class="form-input small" id="bSM" value="0" min="0" max="99">
-                        </div>
-                        <div class="spec-input-group">
-                            <label>🐴 탈것 전설</label>
-                            <input type="number" class="form-input small" id="bML" value="0" min="0" max="99">
-                        </div>
-                        <div class="spec-input-group">
-                            <label>🦄 탈것 신화</label>
-                            <input type="number" class="form-input small" id="bMM" value="0" min="0" max="99">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group"><label class="form-label">3. 닉네임 입력 (세로로 엔터쳐서 입력)</label>
-                    <textarea id="bulkNames" class="form-input" rows="8" placeholder="홍길동&#10;임꺽정&#10;아무개"></textarea>
-                </div>
-                <p style="font-size:12px; color:#666;">※ 기존 유저는 길드와 스펙이 변경되고 <b>전투력은 유지</b>됩니다.<br>※ 신규 유저는 전투력 0으로 생성됩니다.</p>
-            `;
-            openLargeModal('일괄 등록 및 이동', '여러 유저를 한 번에 처리합니다.');
-            setModalBody(html);
-
-            const footerBtn = document.createElement('button');
-            footerBtn.className = "btn btn-primary";
-            footerBtn.innerText = "일괄 적용 실행";
-            footerBtn.onclick = executeBulkUpdate;
-            
-            const closeBtn = document.createElement('button');
-            closeBtn.className = "btn btn-cancel";
-            closeBtn.innerText = "닫기";
-            closeBtn.onclick = closeModal;
-
-            const footerDiv = document.createElement('div');
-            footerDiv.style.marginTop = "20px";
-            footerDiv.style.textAlign = "right";
-            footerDiv.style.display = "flex";
-            footerDiv.style.justifyContent = "flex-end";
-            footerDiv.style.gap = "10px";
-            footerDiv.appendChild(closeBtn);
-            footerDiv.appendChild(footerBtn);
-            document.getElementById('modalBody').appendChild(footerDiv);
-        });
-
-        async function executeBulkUpdate() {
-            const targetGuild = document.getElementById('bulkGuild').value;
-            const namesText = document.getElementById('bulkNames').value;
-            const specs = {
-                shape_legend: Number(document.getElementById('bSL').value) || 0,
-                shape_myth: Number(document.getElementById('bSM').value) || 0,
-                mount_legend: Number(document.getElementById('bML').value) || 0,
-                mount_myth: Number(document.getElementById('bMM').value) || 0
-            };
-
-            if(!namesText.trim()) { showAlert('닉네임을 입력하세요', 'error'); return; }
-
-            const names = namesText.split('\n').map(n => n.trim()).filter(n => n);
-            let updateCount = 0;
-            let newCount = 0;
-
-            const btn = event.target;
-            btn.innerText = "처리 중...";
-            btn.disabled = true;
-
-            try {
-                for(const name of names) {
-                    const docRef = doc(db, "users", name);
-                    const docSnap = await getDoc(docRef);
-
-                    if(docSnap.exists()) {
-                        await updateDoc(docRef, {
-                            guild: targetGuild,
-                            ...specs
-                        });
-                        updateCount++;
-                    } else {
-                        await setDoc(docRef, {
-                            name: name,
-                            guild: targetGuild,
-                            power: 0,
-                            password: null,
-                            ...specs
-                        });
-                        newCount++;
-                    }
-                }
-                
-                await setDoc(doc(collection(db, "logs")), { 
-                    who: 'Admin', 
-                    type: 'bulk_update', 
-                    old_value: '-', 
-                    new_value: `${names.length}명 처리`, 
-                    createdAt: Date.now(), 
-                    ip: await getIp(),
-                    device: navigator.userAgent
-                });
-
-                showAlert(`완료! (수정:${updateCount}, 신규:${newCount})`, 'success');
-                closeModal();
-                setTimeout(async () => {
-                    await loadData();
-                    await autoSyncIfEnabled(targetGuild);
-                }, 500);
-
-            } catch(e) {
-                console.error(e);
-                showAlert('오류 발생', 'error');
-                btn.innerText = "일괄 적용 실행";
-                btn.disabled = false;
-            }
-        }
-
-        // --- 기능: 전투력 수정 (단축) ---
-        function openPowerEditModal(name, u) {
-            openSmallModal('전투력 수정', `현재: ${u.power.toLocaleString()}`, `<div class="form-group"><input type="text" class="form-input" id="editInput" value="${u.power}"></div>`);
-            setTimeout(() => { const i=document.getElementById('editInput'); i.focus(); i.select(); }, 100);
-            
-            document.getElementById('modalSubmit').onclick = async () => {
-                const val = Number(document.getElementById('editInput').value.replace(/,/g, ""));
-                if(isNaN(val)) { showAlert('숫자만 입력', 'error'); return; }
-                try {
-                    await updateDoc(doc(db, "users", name), { 
-                        power: val,
-                        updatedAt: Date.now(),
-                        updatedBy: isAdmin ? 'admin' : 'user'
-                    });
-                    await setDoc(doc(collection(db, "logs")), { 
-                        who: name, 
-                        type: 'power', 
-                        old_value: u.power, 
-                        new_value: val, 
-                        createdAt: Date.now(), 
-                        ip: await getIp(), 
-                        device: navigator.userAgent 
-                    });
-                    closeModal(); 
-                    showAlert('수정 완료', 'success'); 
-                    setTimeout(async () => {
-                        await loadData();
-                        await autoSyncIfEnabled(u.guild);
-                    }, 500);
-                } catch (e) { 
-                    showAlert('오류 발생', 'error'); 
-                }
-            };
-        }
-
-        // --- 관리자 로그인 및 로그아웃 ---
-        document.getElementById('adminLoginBtn').addEventListener('click', () => {
-            if(isAdmin) { 
-                openSmallModal('로그아웃', '관리자 권한을 해제합니다', `<div style="text-align:center; padding:10px 0; color:#374151;">정말 로그아웃 하시겠습니까?</div>`);
-                const btn = document.getElementById('modalSubmit');
-                btn.innerText = "로그아웃"; 
-                btn.style.backgroundColor = "#ef4444";
-                btn.onclick = () => { 
-                    sessionStorage.removeItem('isAdmin');
-                    sessionStorage.removeItem('isSuperAdmin');
-                    showAlert('로그아웃 되었습니다.', 'success'); 
-                    closeModal(); 
-                    setTimeout(() => location.reload(), 500); 
-                };
-                return; 
-            }
-            openSmallModal('관리자 로그인', '', `<div class="form-group"><input type="text" class="form-input" id="aid" placeholder="ID"></div><div class="form-group"><input type="password" class="form-input" id="apw" placeholder="PW"></div>`);
-            const btn = document.getElementById('modalSubmit'); 
-            btn.innerText = "확인"; 
-            btn.style.backgroundColor = "";
-            btn.onclick = async () => {
-                const inputId = document.getElementById('aid').value;
-                const inputPw = document.getElementById('apw').value;
-                
-                // 1. 최종 관리자(슈퍼 관리자) 체크
-                if (btoa(inputId) === SUPER_ADMIN_HASH.id && btoa(inputPw) === SUPER_ADMIN_HASH.pw) {
-                    isAdmin = true;
-                    isSuperAdmin = true;
-                    sessionStorage.setItem('isAdmin', 'true');
-                    sessionStorage.setItem('isSuperAdmin', 'true');
-                    updateAdminUI(); 
-                    closeModal(); 
-                    showAlert('최종 관리자로 로그인되었습니다', 'success');
-                    await checkPendingUsers();
-                    return;
-                }
-                
-                // 2. 일반 관리자 체크 (Firebase admins 컬렉션)
-                try {
-                    const adminDoc = await getDoc(doc(db, "admins", inputId));
-                    if (adminDoc.exists() && adminDoc.data().password === inputPw) {
-                        isAdmin = true;
-                        isSuperAdmin = false;
-                        sessionStorage.setItem('isAdmin', 'true');
-                        sessionStorage.removeItem('isSuperAdmin');
-                        updateAdminUI();
-                        closeModal();
-                        showAlert('관리자로 로그인되었습니다', 'success');
-                        await checkPendingUsers();
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Admin check error:', e);
-                }
-                
-                showAlert('정보 불일치', 'error');
-            };
-        });
-
-        // --- 기타 기능 (길드추가, 엑셀, 잠금 등) ---
-        document.getElementById('guildAddBtn').addEventListener('click', () => {
-            if(!isAdmin) return;
-            openSmallModal('길드 추가', '', `<div class="form-group"><input type="text" class="form-input" id="newGuildInput"></div>`);
-            setTimeout(() => document.getElementById('newGuildInput').focus(), 100);
-            document.getElementById('modalSubmit').onclick = async () => {
-                const name = document.getElementById('newGuildInput').value.trim();
-                if(!name || guildList.includes(name)) { showAlert('유효하지 않음', 'error'); return; }
-                await updateDoc(doc(db, "config", "guilds"), { names: [...guildList, name] });
-                showAlert('추가됨', 'success'); closeModal(); setTimeout(() => location.reload(), 1000);
-            };
-        });
-
-        document.getElementById('excelBtn').addEventListener('click', () => {
-            if(!isAdmin || allGuildData.length === 0) return;
-            const ws = XLSX.utils.json_to_sheet(allGuildData.map(u => ({ 
-                '길드': u.guild, 
-                '닉네임': u.name, 
-                '전투력': u.power, 
-                '형상전설': u.shape_legend || 0, 
-                '형상신화': u.shape_myth || 0, 
-                '탈것전설': u.mount_legend || 0, 
-                '탈것신화': u.mount_myth || 0 
-            })));
-            const wb = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(wb, ws, "길드현황"); 
-            XLSX.writeFile(wb, "길드_전투력_현황.xlsx");
-        });
-
-        // --- 스프레드시트 연동 기능 ---
-        document.getElementById('spreadsheetBtn').addEventListener('click', () => {
-            if (!isAdmin) return;
-            openSpreadsheetSettingsModal();
-        });
-
-        async function openSpreadsheetSettingsModal() {
-            const currentConfig = spreadsheetConfig || {};
-            const sheetId = currentConfig.sheetId || '1ySgXwqwDGSW3c9gh8LVYPDBmdkh27q9JmVKId8gQ6uI';
-            const webAppUrl = currentConfig.webAppUrl || '';
-            const autoSync = currentConfig.autoSync !== false; // 기본값 true
-            
-            // 길드별 시트 매핑 입력 필드 생성
-            let sheetMappingHtml = '<div class="form-group"><label class="form-label">시트 탭 매핑 (길드명: 시트탭명)</label>';
-            guildList.forEach(guild => {
-                // 사신만 개별 시트, 나머지는 비워둠 (전체 시트에만 포함)
-                let defaultSheet = '';
-                if (guild === '사신') {
-                    defaultSheet = '전투력 점수제(사신)';
-                }
-                const mappedSheet = (currentConfig.sheetMappings && currentConfig.sheetMappings[guild]) || defaultSheet;
-                sheetMappingHtml += `
-                    <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
-                        <input type="text" class="form-input" value="${guild}" readonly style="flex:1; background:#f3f4f6;">
-                        <span style="color:#6b7280;">→</span>
-                        <input type="text" class="form-input sheet-mapping" data-guild="${guild}" value="${mappedSheet}" placeholder="${guild === '사신' ? '전투력 점수제(사신)' : '(전체 시트에만 포함)'}" style="flex:2;">
-                    </div>
-                `;
-            });
-            
-            // "전체" 탭 추가
-            const allSheetName = (currentConfig.sheetMappings && currentConfig.sheetMappings['전체']) || '전투력 점수제(전체)';
-            sheetMappingHtml += `
-                <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
-                    <input type="text" class="form-input" value="전체" readonly style="flex:1; background:#f3f4f6;">
-                    <span style="color:#6b7280;">→</span>
-                    <input type="text" class="form-input sheet-mapping" data-guild="전체" value="${allSheetName}" placeholder="전투력 점수제(전체)" style="flex:2;">
-                </div>
-            `;
-            sheetMappingHtml += '</div>';
-
-            const html = `
-                <div class="form-group">
-                    <label class="form-label">스프레드시트 ID</label>
-                    <input type="text" id="sheetId" class="form-input" value="${sheetId}" placeholder="스프레드시트 URL의 /d/ 뒤 ID">
-                    <p style="font-size:11px; color:#6b7280; margin-top:4px;">예: docs.google.com/spreadsheets/d/<b>여기ID부분</b>/edit</p>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Google Apps Script 웹앱 URL</label>
-                    <input type="text" id="webAppUrl" class="form-input" value="${webAppUrl}" placeholder="https://script.google.com/macros/s/.../exec">
-                    <p style="font-size:11px; color:#6b7280; margin-top:4px;">Apps Script 배포 후 받은 웹앱 URL</p>
-                </div>
-                ${sheetMappingHtml}
-                <div class="form-group">
-                    <label class="checkbox-label" style="background:none; padding:0;">
-                        <input type="checkbox" id="autoSync" ${autoSync ? 'checked' : ''}>
-                        데이터 변경 시 자동으로 스프레드시트 동기화
-                    </label>
-                </div>
-                <div style="display:flex; gap:8px; margin-top:16px;">
-                    <button class="btn btn-primary" onclick="window.testSpreadsheetSync()" style="flex:1;">🧪 연동 테스트</button>
-                    <button class="btn btn-success" onclick="window.syncAllToSpreadsheet()" style="flex:1;">🔄 전체 동기화</button>
-                </div>
-                <p style="font-size:12px; color:#6b7280; margin-top:12px; padding:10px; background:#f9fafb; border-radius:6px;">
-                    <b>설정 방법:</b><br>
-                    1. 스프레드시트에서 "확장 프로그램" > "Apps Script" 선택<br>
-                    2. 제공된 GoogleAppsScript.gs 코드 붙여넣기<br>
-                    3. "배포" > "새 배포" > "웹 앱" 선택<br>
-                    4. "액세스 권한" > "모든 사용자" 선택<br>
-                    5. 배포 후 받은 URL을 위에 입력
-                </p>
-            `;
-
-            openLargeModal('스프레드시트 연동 설정', '구글 스프레드시트 자동 동기화');
-            setModalBody(html);
-
-            const footerDiv = document.createElement('div');
-            footerDiv.style.marginTop = "20px";
-            footerDiv.style.display = "flex";
-            footerDiv.style.justifyContent = "flex-end";
-            footerDiv.style.gap = "10px";
-
-            const closeBtn = document.createElement('button');
-            closeBtn.className = "btn btn-cancel";
-            closeBtn.innerText = "닫기";
-            closeBtn.onclick = closeModal;
-
-            const saveBtn = document.createElement('button');
-            saveBtn.className = "btn btn-primary";
-            saveBtn.innerText = "💾 설정 저장";
-            saveBtn.onclick = saveSpreadsheetSettings;
-
-            footerDiv.appendChild(closeBtn);
-            footerDiv.appendChild(saveBtn);
-            document.getElementById('modalBody').appendChild(footerDiv);
-        }
-
-        async function saveSpreadsheetSettings() {
-            const sheetId = document.getElementById('sheetId').value.trim();
-            const webAppUrl = document.getElementById('webAppUrl').value.trim();
-            const autoSync = document.getElementById('autoSync').checked;
-
-            if (!sheetId || !webAppUrl) {
-                showAlert('스프레드시트 ID와 웹앱 URL을 모두 입력하세요', 'error');
-                return;
-            }
-
-            // 시트 매핑 수집
-            const sheetMappings = {};
-            document.querySelectorAll('.sheet-mapping').forEach(input => {
-                const guild = input.dataset.guild;
-                const sheetName = input.value.trim();
-                if (sheetName) {
-                    sheetMappings[guild] = sheetName;
-                }
-            });
-
-            const config = {
-                sheetId,
-                webAppUrl,
-                autoSync,
-                sheetMappings
-            };
-
-            try {
-                await setDoc(doc(db, "config", "spreadsheet"), config);
-                spreadsheetConfig = config;
-                showAlert('스프레드시트 설정이 저장되었습니다', 'success');
-                closeModal();
-            } catch (e) {
-                console.error(e);
-                showAlert('설정 저장 중 오류가 발생했습니다', 'error');
-            }
-        }
-
-        window.testSpreadsheetSync = async function() {
-            if (!spreadsheetConfig || !spreadsheetConfig.webAppUrl) {
-                showAlert('먼저 스프레드시트 설정을 저장하세요', 'error');
-                return;
-            }
-
-            // 첫 번째 길드로 테스트
-            const testGuild = guildList[0];
-            const testUsers = allGuildData.filter(u => u.guild === testGuild).slice(0, 5);
-
-            if (testUsers.length === 0) {
-                showAlert('테스트할 데이터가 없습니다', 'error');
-                return;
-            }
-
-            const sheetName = spreadsheetConfig.sheetMappings[testGuild] || `전투력 점수제(${testGuild})`;
-
-            try {
-                showAlert('테스트 중...', 'success');
-                const result = await syncToSpreadsheet(testUsers, sheetName);
-                if (result.success) {
-                    showAlert(`테스트 성공! ${result.message}`, 'success');
-                } else {
-                    showAlert(`테스트 실패: ${result.error}`, 'error');
-                }
-            } catch (e) {
-                console.error(e);
-                showAlert('테스트 중 오류 발생: ' + e.message, 'error');
-            }
-        };
-
-        window.syncAllToSpreadsheet = async function() {
-            if (!spreadsheetConfig || !spreadsheetConfig.webAppUrl) {
-                showAlert('먼저 스프레드시트 설정을 저장하세요', 'error');
-                return;
-            }
-
-            if (!await showConfirm('스프레드시트 동기화', '모든 데이터를 스프레드시트에 동기화하시겠습니까?')) {
-                return;
-            }
-
-            try {
-                showAlert('동기화 중...', 'success');
-                let successCount = 0;
-                let failCount = 0;
-
-                // 각 길드별로 동기화
-                for (const guild of guildList) {
-                    const guildUsers = allGuildData.filter(u => u.guild === guild);
-                    const sheetName = spreadsheetConfig.sheetMappings[guild] || `전투력 점수제(${guild})`;
-                    
-                    try {
-                        const result = await syncToSpreadsheet(guildUsers, sheetName);
-                        if (result.success) {
-                            successCount++;
-                        } else {
-                            failCount++;
-                            console.error(`Failed to sync ${guild}:`, result.error);
-                        }
-                    } catch (e) {
-                        failCount++;
-                        console.error(`Error syncing ${guild}:`, e);
-                    }
-                    
-                    // API 요청 간격 (과부하 방지)
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-
-                // 전체 탭 동기화
-                const allSheetName = spreadsheetConfig.sheetMappings['전체'] || '전투력 점수제(전체)';
-                try {
-                    const result = await syncToSpreadsheet(allGuildData, allSheetName);
-                    if (result.success) {
-                        successCount++;
-                    } else {
-                        failCount++;
-                    }
-                } catch (e) {
-                    failCount++;
-                    console.error('Error syncing all:', e);
-                }
-
-                if (failCount === 0) {
-                    showAlert(`✅ 전체 동기화 완료! (${successCount}개 시트)`, 'success');
-                } else {
-                    showAlert(`⚠️ 동기화 완료 (성공: ${successCount}, 실패: ${failCount})`, 'error');
-                }
-
-                await setDoc(doc(collection(db, "logs")), {
-                    who: 'Admin',
-                    type: 'spreadsheet_sync',
-                    old_value: '-',
-                    new_value: `전체 동기화 (성공:${successCount}, 실패:${failCount})`,
-                    createdAt: Date.now(),
-                    ip: await getIp()
-                });
-
-            } catch (e) {
-                console.error(e);
-                showAlert('동기화 중 오류 발생', 'error');
-            }
-        };
-
-        async function syncToSpreadsheet(users, sheetName) {
-            if (!spreadsheetConfig || !spreadsheetConfig.webAppUrl) {
-                return { success: false, error: '스프레드시트 설정이 없습니다' };
-            }
-
-            const payload = {
-                sheetId: spreadsheetConfig.sheetId,
-                sheetName: sheetName,
-                users: users.map(u => ({
-                    guild: u.guild,
-                    name: u.name,
-                    power: u.power,
-                    shape_legend: u.shape_legend || 0,
-                    shape_myth: u.shape_myth || 0,
-                    mount_legend: u.mount_legend || 0,
-                    mount_myth: u.mount_myth || 0
-                }))
-            };
-
-            try {
-                const response = await fetch(spreadsheetConfig.webAppUrl, {
-                    method: 'POST',
-                    mode: 'no-cors', // CORS 우회
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                // no-cors 모드에서는 응답을 읽을 수 없으므로 성공으로 간주
-                return { success: true, message: `${users.length}개 데이터 전송` };
-
-            } catch (e) {
-                console.error('Sync error:', e);
-                return { success: false, error: e.message };
-            }
-        }
-
-        // 자동 동기화 함수 (데이터 변경 시 호출)
-        async function autoSyncIfEnabled(guild = null) {
-            if (!spreadsheetConfig || !spreadsheetConfig.autoSync) {
-                return;
-            }
-
-            try {
-                if (guild) {
-                    // 특정 길드만 동기화
-                    const guildUsers = allGuildData.filter(u => u.guild === guild);
-                    const sheetName = spreadsheetConfig.sheetMappings[guild] || `전투력 점수제(${guild})`;
-                    await syncToSpreadsheet(guildUsers, sheetName);
-                }
-                
-                // 전체 탭도 동기화
-                const allSheetName = spreadsheetConfig.sheetMappings['전체'] || '전투력 점수제(전체)';
-                await syncToSpreadsheet(allGuildData, allSheetName);
-                
-            } catch (e) {
-                console.error('Auto sync error:', e);
-            }
-        }
-
-        // 구글 시트 동기화 설정
-        document.getElementById('sheetSyncBtn').addEventListener('click', () => {
-            if (!isAdmin) return;
-            openGoogleSheetSettings();
-        });
-
-        async function openGoogleSheetSettings() {
-            openLargeModal('구글 시트 동기화 설정', '스프레드시트 연동 설정');
-            
-            // 기존 설정 불러오기
-            const configRef = doc(db, "config", "googleSheet");
-            const configSnap = await getDoc(configRef);
-            let config = { scriptUrl: '', sheetId: '', enabled: false };
-            if (configSnap.exists()) {
-                config = configSnap.data();
-            }
-
-            const html = `
-                <div class="form-group">
-                    <label class="form-label">Google Apps Script 웹앱 URL</label>
-                    <input type="text" id="scriptUrl" class="form-input" value="${config.scriptUrl || ''}" placeholder="https://script.google.com/...">
-                    <p style="font-size:12px; color:#6b7280; margin-top:4px;">※ Apps Script 배포 URL을 입력하세요</p>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">스프레드시트 ID</label>
-                    <input type="text" id="sheetId" class="form-input" value="${config.sheetId || '1ySgXwqwDGSW3c9gh8LVYPDBmdkh27q9JmVKId8gQ6uI'}" placeholder="1ySgXwqwDGSW3c9gh8LVYPDBmdkh27q9JmVKId8gQ6uI">
-                    <p style="font-size:12px; color:#6b7280; margin-top:4px;">※ 스프레드시트 URL에서 /d/ 뒤의 ID를 입력하세요</p>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">자동 동기화</label>
-                    <select id="autoSync" class="form-input">
-                        <option value="true" ${config.enabled ? 'selected' : ''}>활성화 (데이터 변경 시 자동 전송)</option>
-                        <option value="false" ${!config.enabled ? 'selected' : ''}>비활성화 (수동만 가능)</option>
-                    </select>
-                </div>
-                <div style="margin-top:20px; padding:15px; background:#eff6ff; border-radius:8px; border-left:4px solid #3b82f6;">
-                    <p style="font-size:13px; color:#1e40af; margin-bottom:8px;"><strong>📝 설정 방법:</strong></p>
-                    <ol style="font-size:12px; color:#1e40af; margin-left:20px; line-height:1.8;">
-                        <li>구글 스프레드시트를 엽니다</li>
-                        <li>상단 메뉴에서 "확장 프로그램" → "Apps Script" 클릭</li>
-                        <li>제공된 Apps Script 코드를 붙여넣습니다</li>
-                        <li>"배포" → "새 배포" → "웹 앱" 선택</li>
-                        <li>"액세스 권한: 모든 사용자" 선택 후 배포</li>
-                        <li>생성된 웹앱 URL을 위에 입력합니다</li>
-                    </ol>
-                </div>
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button class="btn btn-primary" id="saveSheetConfig" style="flex:1">💾 설정 저장</button>
-                    <button class="btn btn-success" id="testSync" style="flex:1">🔄 지금 동기화</button>
-                    <button class="btn btn-cancel" onclick="closeModal()">닫기</button>
-                </div>
-            `;
-
-            document.getElementById('modalBody').innerHTML = html;
-
-            // 설정 저장
-            document.getElementById('saveSheetConfig').onclick = async () => {
-                const scriptUrl = document.getElementById('scriptUrl').value.trim();
-                const sheetId = document.getElementById('sheetId').value.trim();
-                const enabled = document.getElementById('autoSync').value === 'true';
-
-                if (!scriptUrl || !sheetId) {
-                    showAlert('모든 항목을 입력하세요', 'error');
-                    return;
-                }
-
-                try {
-                    await setDoc(configRef, {
-                        scriptUrl: scriptUrl,
-                        sheetId: sheetId,
-                        enabled: enabled,
-                        updatedAt: Date.now()
-                    });
-                    showAlert('설정이 저장되었습니다', 'success');
-                } catch (e) {
-                    console.error(e);
-                    showAlert('저장 실패', 'error');
-                }
-            };
-
-            // 즉시 동기화
-            document.getElementById('testSync').onclick = async () => {
-                const scriptUrl = document.getElementById('scriptUrl').value.trim();
-                const sheetId = document.getElementById('sheetId').value.trim();
-
-                if (!scriptUrl || !sheetId) {
-                    showAlert('설정을 먼저 저장하세요', 'error');
-                    return;
-                }
-
-                await syncToGoogleSheet(scriptUrl, sheetId);
-            };
-        }
-
-        // 구글 시트로 데이터 전송
-        async function syncToGoogleSheet(scriptUrl, sheetId) {
-            if (!scriptUrl || !sheetId) {
-                showAlert('구글 시트 설정이 필요합니다', 'error');
-                return;
-            }
-
-            try {
-                // 전투력 순으로 정렬
-                const sortedData = [...allGuildData].sort((a, b) => b.power - a.power);
-
-                // 각 길드별로 데이터 그룹화
-                const guildGroups = {};
-                sortedData.forEach(user => {
-                    if (!guildGroups[user.guild]) {
-                        guildGroups[user.guild] = [];
-                    }
-                    guildGroups[user.guild].push(user);
-                });
-
-                // 길드별 배경색 정의
-                const guildColors = {
-                    '사신': '#fff2cc',
-                    '축복': '#cfe2f3',
-                    '놀자': '#d9ead3',
-                    '루비': '#f4cccc'
-                };
-
-                // 각 길드별로 색상 순환
-                let colorIndex = 0;
-                const defaultColors = ['#fff2cc', '#cfe2f3', '#d9ead3', '#f4cccc', '#e4d7f5', '#fce5cd'];
-                Object.keys(guildGroups).forEach(guildName => {
-                    if (!guildColors[guildName]) {
-                        guildColors[guildName] = defaultColors[colorIndex % defaultColors.length];
-                        colorIndex++;
-                    }
-                });
-
-                // 전체 데이터 준비
-                const payload = {
-                    sheetId: sheetId,
-                    data: sortedData.map(user => ({
-                        guild: user.guild,
-                        name: user.name,
-                        power: user.power,
-                        shape_legend: user.shape_legend || 0,
-                        shape_myth: user.shape_myth || 0,
-                        mount_legend: user.mount_legend || 0,
-                        mount_myth: user.mount_myth || 0,
-                        backgroundColor: guildColors[user.guild] || '#ffffff'
-                    }))
-                };
-
-                showAlert('동기화 중...', 'success');
-
-                // Google Apps Script로 전송
-                const formData = new FormData();
-                formData.append('payload', JSON.stringify(payload));
-                
-                fetch(scriptUrl, {
-                    method: 'POST',
-                    body: formData
-                }).then(() => {
-                    showAlert('구글 시트 동기화가 완료되었습니다!', 'success');
-                }).catch(err => {
-                    console.error('Sync error:', err);
-                    // no-cors 모드에서는 에러가 나도 실제로는 전송됨
-                    showAlert('구글 시트 동기화가 완료되었습니다!', 'success');
-                });
-                
-                // 로그 기록
-                await setDoc(doc(collection(db, "logs")), {
-                    who: 'Admin',
-                    type: 'google_sheet_sync',
-                    old_value: '-',
-                    new_value: `${sortedData.length}명 동기화`,
-                    createdAt: Date.now(),
-                    ip: await getIp()
-                });
-
-            } catch (e) {
-                console.error('Google Sheet Sync Error:', e);
-                showAlert('동기화 실패. Apps Script 설정을 확인하세요', 'error');
-            }
-        }
-
-        // 자동 동기화 함수
-
-        document.getElementById('lockManageBtn').addEventListener('click', () => {
-            if (!isAdmin) return;
-            
-            let statusMsg = '';
-            if (lockStartTime > 0 && lockEndTime > 0) {
-                statusMsg = `현재 설정: ${formatKSTDateTime(lockStartTime)} ~ ${formatKSTDateTime(lockEndTime)} (KST)`;
-            } else {
-                statusMsg = '현재 잠금 설정 없음';
-            }
-
-            const startValue = lockStartTime > 0 ? toDatetimeLocalValue(lockStartTime) : '';
-            const endValue = lockEndTime > 0 ? toDatetimeLocalValue(lockEndTime) : '';
-
-            openSmallModal('잠금 설정 (KST 기준)', '', `
-                <div style="margin-bottom:15px; color:#374151; font-size:13px; padding:10px; background:#f9fafb; border-radius:8px;">${statusMsg}</div>
-                <div class="form-group">
-                    <label class="form-label">잠금 시작 시간 (KST)</label>
-                    <input type="datetime-local" id="lockStartInput" class="form-input" value="${startValue}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">잠금 종료 시간 (KST)</label>
-                    <input type="datetime-local" id="lockEndInput" class="form-input" value="${endValue}">
-                </div>
-                <div class="form-group">
-                    <button id="unlockBtn" class="btn btn-cancel" style="width:100%">🔓 잠금 해제</button>
-                </div>
-                <p style="font-size:12px; color:#6b7280; margin-top:-10px;">※ 한국 표준시(KST) 기준으로 설정됩니다</p>
-            `);
-
-            document.getElementById('unlockBtn').onclick = async () => { 
-                if(!await showConfirm('잠금 해제', '잠금을 해제하시겠습니까?')) return; 
-                await setDoc(doc(db, "config", "system"), { 
-                    lockStartTime: 0, 
-                    lockEndTime: 0 
-                }); 
-                showAlert('잠금이 해제되었습니다', 'success'); 
-                closeModal(); 
-                setTimeout(() => location.reload(), 1000); 
-            };
-
-            document.getElementById('modalSubmit').onclick = async () => {
-                const startVal = document.getElementById('lockStartInput').value;
-                const endVal = document.getElementById('lockEndInput').value;
-                
-                if (!startVal || !endVal) { 
-                    showAlert('시작 시간과 종료 시간을 모두 선택하세요', 'error'); 
-                    return; 
-                }
-
-                const startTime = fromKST(startVal);
-                const endTime = fromKST(endVal);
-
-                if (endTime <= startTime) {
-                    showAlert('종료 시간이 시작 시간보다 빠릅니다', 'error');
-                    return;
-                }
-
-                await setDoc(doc(db, "config", "system"), { 
-                    lockStartTime: startTime,
-                    lockEndTime: endTime
-                });
-                
-                showAlert('잠금이 설정되었습니다', 'success'); 
-                closeModal(); 
-                setTimeout(() => location.reload(), 1000);
-            };
-        });
-
-        document.getElementById('userManageBtn').addEventListener('click', async () => {
-            if(!isAdmin) return;
-            openLargeModal('유저 관리', '비밀번호 관리 및 필터');
-            const snap = await getDocs(collection(db, "users")); 
-            let users = []; 
-            snap.forEach(d => users.push(d.data())); 
-            
-            // 초기 정렬: 가나다순
-            users.sort((a,b)=>a.name.localeCompare(b.name));
-            
-            let html = `
-                <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-                    <div class="form-group" style="flex:2; margin-bottom:0;">
-                        <input type="text" id="modalSearchInput" class="form-input" placeholder="닉네임 검색...">
-                    </div>
-                    <div class="form-group" style="flex:1; margin-bottom:0;">
-                        <select id="guildFilter" class="form-input">
-                            <option value="">전체 길드</option>
-                            ${[...new Set(users.map(u=>u.guild))].sort().map(g=>`<option value="${g}">${g}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex:1; margin-bottom:0;">
-                        <select id="pwFilter" class="form-input">
-                            <option value="">비밀번호 전체</option>
-                            <option value="set">설정됨</option>
-                            <option value="unset">미설정</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex:1; margin-bottom:0;">
-                        <select id="sortOrder" class="form-input">
-                            <option value="name">가나다순</option>
-                            <option value="updated">최근 갱신순</option>
-                        </select>
-                    </div>
-                </div>
-                <p style="font-size:12px; color:#6b7280; margin-bottom:12px;">총 <span id="userCount">${users.length}</span>명</p>
-                <div class="table-scroll-container">
-                    <table class="common-table" id="userManageTable">
-                        <thead>
-                            <tr>
-                                <th style="width:25%;">닉네임</th>
-                                <th style="width:15%;">길드</th>
-                                <th style="width:15%;">비밀번호</th>
-                                <th style="width:25%;">비밀번호 관리</th>
-                                <th style="width:20%;">등록 해제</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userManageTableBody"></tbody>
-                    </table>
-                </div>
-            `;
-            
-            setModalBody(html);
-            
-            // 테이블 렌더링 함수
-            function renderUserTable(filteredUsers) {
-                const tbody = document.getElementById('userManageTableBody');
-                tbody.innerHTML = '';
-                
-                filteredUsers.forEach(u => {
-                    const pwStatus = u.password 
-                        ? '<span style="color:#10b981; font-weight:600;">✓ 설정됨</span>' 
-                        : '<span style="color:#ef4444; font-weight:600;">✗ 미설정</span>';
-                    
-                    const resetBtn = u.password 
-                        ? `<button class="btn-reset-pw" onclick="window.resetUserPw('${u.name}')">초기화</button>` 
-                        : '-';
-                    
-                    const deleteBtn = `<button class="btn-delete" onclick="window.deleteUser('${u.name}')" style="background:#ef4444; color:white; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.2s;">🗑️ 등록 해제</button>`;
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><strong>${u.name}</strong></td>
-                        <td>${u.guild}</td>
-                        <td>${pwStatus}</td>
-                        <td>${resetBtn}</td>
-                        <td>${deleteBtn}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                
-                document.getElementById('userCount').textContent = filteredUsers.length;
-            }
-            
-            // 필터링 및 정렬 함수
-            function applyFiltersAndSort() {
-                const searchText = document.getElementById('modalSearchInput').value.toLowerCase();
-                const guildFilter = document.getElementById('guildFilter').value;
-                const pwFilter = document.getElementById('pwFilter').value;
-                const sortOrder = document.getElementById('sortOrder').value;
-                
-                let filtered = users.filter(u => {
-                    const matchSearch = u.name.toLowerCase().includes(searchText);
-                    const matchGuild = !guildFilter || u.guild === guildFilter;
-                    const matchPw = !pwFilter || 
-                        (pwFilter === 'set' && u.password) || 
-                        (pwFilter === 'unset' && !u.password);
-                    
-                    return matchSearch && matchGuild && matchPw;
-                });
-                
-                // 정렬
-                if (sortOrder === 'name') {
-                    filtered.sort((a,b) => a.name.localeCompare(b.name));
-                } else if (sortOrder === 'updated') {
-                    filtered.sort((a,b) => {
-                        const aTime = (a.updatedAt && a.updatedBy !== 'admin') ? a.updatedAt : 0;
-                        const bTime = (b.updatedAt && b.updatedBy !== 'admin') ? b.updatedAt : 0;
-                        return bTime - aTime;  // 최신순
-                    });
-                }
-                
-                renderUserTable(filtered);
-            }
-            
-            // 초기 렌더링
-            renderUserTable(users);
-            
-            // 이벤트 리스너
-            document.getElementById('modalSearchInput').addEventListener('input', applyFiltersAndSort);
-            document.getElementById('guildFilter').addEventListener('change', applyFiltersAndSort);
-            document.getElementById('pwFilter').addEventListener('change', applyFiltersAndSort);
-            document.getElementById('sortOrder').addEventListener('change', applyFiltersAndSort);
-        });
-
-        window.resetUserPw = async function(n) { 
-            if(!await showConfirm('비밀번호 초기화', `[${n}]님의 비밀번호를 초기화하시겠습니까?`)) return; 
-            await updateDoc(doc(db, "users", n), { password: null }); 
-            showAlert('비밀번호가 초기화되었습니다', 'success'); 
-            closeModal(); 
-            setTimeout(() => location.reload(), 1000); 
-        };
-
-        // 사용자 등록 해제 (정보 영구 보관)
-        window.deleteUser = async function(name) {
-            // 삭제 확인
-            if(!await showConfirm('사용자 등록 해제', `<span style="color:#ef4444; font-weight:600;">[${name}]님을 등록 해제하시겠습니까?</span><br><br>• 사용자 정보는 영구 보관됩니다<br>• 삭제된 사용자 목록에서 확인 가능<br>• 복구는 불가능합니다`)) return;
-            
-            // 삭제 사유 입력
-            openSmallModal('등록 해제 사유', '선택사항 - 나중에 참고용', `
-                <div class="form-group">
-                    <label class="form-label">사유 (선택사항)</label>
-                    <select id="deleteReason" class="form-input">
-                        <option value="자진 탈퇴">자진 탈퇴</option>
-                        <option value="장기 미접속">장기 미접속</option>
-                        <option value="길드 이동">길드 이동</option>
-                        <option value="규정 위반">규정 위반</option>
-                        <option value="기타">기타</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">상세 메모 (선택사항)</label>
-                    <textarea id="deleteMemo" class="form-input" rows="3" placeholder="추가 메모..."></textarea>
-                </div>
-            `);
-            
-            document.getElementById('modalSubmit').onclick = async () => {
-                const reason = document.getElementById('deleteReason').value;
-                const memo = document.getElementById('deleteMemo').value.trim();
-                
-                try {
-                    // 1. 삭제 전에 사용자 정보 가져오기
-                    const userDoc = await getDoc(doc(db, "users", name));
-                    if (!userDoc.exists()) {
-                        showAlert('사용자를 찾을 수 없습니다', 'error');
-                        return;
-                    }
-                    
-                    const userData = userDoc.data();
-                    
-                    // 2. deletedUsers 컬렉션에 백업 저장
-                    await setDoc(doc(collection(db, "deletedUsers")), {
-                        ...userData,  // 모든 사용자 정보
-                        deletedAt: Date.now(),
-                        deletedBy: 'admin',
-                        deleteReason: reason,
-                        deleteMemo: memo || '',
-                        originalName: name,
-                        deletedIp: await getIp(),
-                        deletedDevice: navigator.userAgent
-                    });
-                    
-                    // 3. users 컬렉션에서 삭제
-                    await deleteDoc(doc(db, "users", name));
-                    
-                    // 4. 로그 기록
-                    await setDoc(doc(collection(db, "logs")), {
-                        who: name,
-                        type: 'user_deleted',
-                        old_value: '사용자 존재',
-                        new_value: `등록 해제 (사유: ${reason})`,
-                        createdAt: Date.now(),
-                        ip: await getIp(),
-                        device: navigator.userAgent
-                    });
-                    
-                    showAlert('등록 해제 완료 (정보는 영구 보관됨)', 'success');
-                    closeModal();
-                    setTimeout(() => location.reload(), 1000);
-                } catch (e) {
-                    console.error('Delete error:', e);
-                    showAlert('등록 해제 중 오류가 발생했습니다', 'error');
-                }
-            };
-        };
-
-
-        document.getElementById('logViewBtn').addEventListener('click', async () => {
-            if(!isAdmin) return; 
-            openLargeModal('로그', '전체 로그 (검색 가능)');
-            
-            // limit 제거하여 모든 로그 가져오기
-            const snap = await getDocs(query(collection(db, "logs"), orderBy("createdAt", "desc")));
-            
-            const logs = [];
-            snap.forEach(d => { 
-                const l = d.data(); 
-                logs.push({
-                    time: formatDateTime(l.createdAt),
-                    who: l.who || '-',
-                    type: l.type || '-',
-                    oldValue: l.old_value || '-',
-                    newValue: l.new_value || '-',
-                    ip: l.ip || '-',
-                    device: l.device || '-'
-                });
-            });
-            
-            // 로그 타입 한글 변환 함수
-            function formatLogType(type) {
-                const typeMap = {
-                    'power': '⚡ 전투력 변경',
-                    'info_edit': '✏️ 정보 수정',
-                    'nickname_change': '🔄 닉네임 변경',
-                    'user_approved': '✅ 사용자 승인',
-                    'user_rejected': '❌ 사용자 거부',
-                    'user_deleted': '🗑️ 사용자 삭제',
-                    'user_request': '📝 등록 요청',
-                    'bulk_update': '📋 일괄 처리',
-                    'spreadsheet_sync': '📊 스프레드시트 동기화',
-                    'google_sheet_sync': '📊 구글시트 동기화'
-                };
-                return typeMap[type] || type;
-            }
-            
-            // 로그 내용 포맷팅 함수
-            function formatLogContent(log) {
-                const type = log.type;
-                const oldVal = log.oldValue;
-                const newVal = log.newValue;
-                
-                switch(type) {
-                    case 'power':
-                        const oldPower = Number(oldVal).toLocaleString();
-                        const newPower = Number(newVal).toLocaleString();
-                        return `${oldPower} → ${newPower}`;
-                    
-                    case 'nickname_change':
-                        return `${oldVal} → ${newVal}`;
-                    
-                    case 'info_edit':
-                        return newVal === '관리자수정' ? '관리자가 수정함' : '본인이 수정함';
-                    
-                    case 'user_approved':
-                        return '승인 완료';
-                    
-                    case 'user_rejected':
-                        return '등록 거부';
-                    
-                    case 'user_deleted':
-                        return newVal;
-                    
-                    case 'user_request':
-                        return newVal;
-                    
-                    case 'bulk_update':
-                        return newVal;
-                    
-                    case 'spreadsheet_sync':
-                    case 'google_sheet_sync':
-                        return newVal;
-                    
-                    default:
-                        return newVal;
-                }
-            }
-            
-            let html = `
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <input type="text" id="logSearchInput" class="form-input" placeholder="대상 검색..." style="margin-bottom: 0;">
-                    <p style="font-size: 12px; color: #6b7280; margin-top: 8px;">총 ${logs.length}개 로그</p>
-                </div>
-                <div class="table-scroll-container">
-                    <table class="common-table" id="logTable">
-                        <thead>
-                            <tr>
-                                <th style="min-width: 130px;">시간</th>
-                                <th style="min-width: 100px;">대상</th>
-                                <th style="min-width: 180px;">작업</th>
-                                <th style="min-width: 200px;">내용</th>
-                                <th style="min-width: 120px;">IP</th>
-                                <th style="min-width: 200px;">브라우저</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-            
-            logs.forEach(l => {
-                const deviceShort = l.device.length > 50 ? l.device.substring(0, 50) + '...' : l.device;
-                const logType = formatLogType(l.type);
-                const logContent = formatLogContent(l);
-                
-                html += `<tr>
-                    <td>${l.time}</td>
-                    <td><strong>${l.who}</strong></td>
-                    <td><span style="white-space: nowrap;">${logType}</span></td>
-                    <td>${logContent}</td>
-                    <td><code style="font-size:11px;">${l.ip}</code></td>
-                    <td title="${l.device}" style="font-size:11px;">${deviceShort}</td>
-                </tr>`; 
-            });
-            
-            html += '</tbody></table></div>';
-            setModalBody(html);
-            
-            // 검색 기능
-            document.getElementById('logSearchInput').addEventListener('input', (e) => { 
-                const searchText = e.target.value.toLowerCase(); 
-                document.querySelectorAll('#logTable tbody tr').forEach(row => {
-                    const who = row.cells[1].textContent.toLowerCase();
-                    row.style.display = who.includes(searchText) ? '' : 'none';
-                });
-            });
-        });
-
-        // 삭제된 사용자 보기
-        document.getElementById('deletedUsersBtn').addEventListener('click', async () => {
-            if(!isAdmin) return;
-            openLargeModal('삭제된 사용자', '등록 해제된 사용자 목록 (영구 보관)');
-            
-            const snap = await getDocs(query(collection(db, "deletedUsers"), orderBy("deletedAt", "desc")));
-            
-            const deletedUsers = [];
-            snap.forEach(d => {
-                const u = d.data();
-                deletedUsers.push({
-                    name: u.originalName || u.name,
-                    guild: u.guild || '-',
-                    power: u.power || 0,
-                    deletedAt: formatDateTime(u.deletedAt),
-                    reason: u.deleteReason || '-',
-                    memo: u.deleteMemo || '-',
-                    deletedBy: u.deletedBy || 'admin'
-                });
-            });
-            
-            let html = `
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <input type="text" id="deletedSearchInput" class="form-input" placeholder="닉네임 검색..." style="margin-bottom: 0;">
-                    <p style="font-size: 12px; color: #6b7280; margin-top: 8px;">총 ${deletedUsers.length}명</p>
-                </div>
-                <div class="table-scroll-container">
-                    <table class="common-table" id="deletedUsersTable">
-                        <thead>
-                            <tr>
-                                <th style="min-width: 100px;">닉네임</th>
-                                <th style="min-width: 80px;">길드</th>
-                                <th style="min-width: 100px;">전투력</th>
-                                <th style="min-width: 130px;">삭제일시</th>
-                                <th style="min-width: 100px;">사유</th>
-                                <th style="min-width: 150px;">메모</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-            
-            deletedUsers.forEach(u => {
-                html += `<tr>
-                    <td><strong>${u.name}</strong></td>
-                    <td>${u.guild}</td>
-                    <td style="color:#3b82f6; font-weight:600;">${u.power.toLocaleString()}</td>
-                    <td style="font-size:12px;">${u.deletedAt}</td>
-                    <td><span style="padding:4px 8px; background:#fef2f2; color:#991b1b; border-radius:4px; font-size:12px;">${u.reason}</span></td>
-                    <td style="font-size:12px; color:#6b7280;">${u.memo || '-'}</td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table></div>';
-            setModalBody(html);
-            
-            // 검색 기능
-            document.getElementById('deletedSearchInput').addEventListener('input', (e) => {
-                const searchText = e.target.value.toLowerCase();
-                document.querySelectorAll('#deletedUsersTable tbody tr').forEach(row => {
-                    const name = row.cells[0].textContent.toLowerCase();
-                    row.style.display = name.includes(searchText) ? '' : 'none';
-                });
-            });
-        });
-
-        // 일괄 등록 해제
-        document.getElementById('bulkDeleteBtn').addEventListener('click', async () => {
-            if(!isAdmin) return;
-            openLargeModal('일괄 등록 해제', '여러 사용자를 한 번에 등록 해제');
-            
-            const snap = await getDocs(collection(db, "users"));
-            let users = [];
-            snap.forEach(d => users.push(d.data()));
-            
-            // 가나다순 정렬
-            users.sort((a,b) => a.name.localeCompare(b.name));
-            
-            let html = `
-                <div style="margin-bottom: 16px;">
-                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                        <div class="form-group" style="flex: 2; margin-bottom: 0;">
-                            <input type="text" id="bulkDeleteSearch" class="form-input" placeholder="닉네임 검색...">
-                        </div>
-                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                            <select id="bulkDeleteGuildFilter" class="form-input">
-                                <option value="">전체 길드</option>
-                                ${[...new Set(users.map(u=>u.guild))].sort().map(g=>`<option value="${g}">${g}</option>`).join('')}
-                            </select>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-                        <button id="selectAllBtn" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;">
-                            ✅ 전체 선택
-                        </button>
-                        <button id="deselectAllBtn" class="btn btn-cancel" style="padding: 8px 16px; font-size: 13px;">
-                            ❌ 전체 해제
-                        </button>
-                        <span id="selectedCount" style="margin-left: auto; font-size: 14px; color: #6b7280;">
-                            선택: <strong style="color: #ef4444;">0</strong>명
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="table-scroll-container" style="max-height: 350px;">
-                    <table class="common-table" id="bulkDeleteTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">선택</th>
-                                <th style="min-width: 120px;">닉네임</th>
-                                <th style="min-width: 80px;">길드</th>
-                                <th style="min-width: 100px;">전투력</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bulkDeleteTableBody"></tbody>
-                    </table>
-                </div>
-                
-                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label class="form-label">등록 해제 사유 (공통)</label>
-                        <select id="bulkDeleteReason" class="form-input">
-                            <option value="자진 탈퇴">자진 탈퇴</option>
-                            <option value="장기 미접속">장기 미접속</option>
-                            <option value="길드 이동">길드 이동</option>
-                            <option value="규정 위반">규정 위반</option>
-                            <option value="일괄 정리">일괄 정리</option>
-                            <option value="기타">기타</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label class="form-label">상세 메모 (공통, 선택사항)</label>
-                        <textarea id="bulkDeleteMemo" class="form-input" rows="2" placeholder="추가 메모..."></textarea>
-                    </div>
-                    <button id="executeBulkDelete" class="btn btn-danger" style="width: 100%;">
-                        🗑️ 선택한 사용자 일괄 등록 해제
-                    </button>
-                </div>
-            `;
-            
-            setModalBody(html);
-            
-            // 테이블 렌더링
-            function renderTable() {
-                const tbody = document.getElementById('bulkDeleteTableBody');
-                const searchText = document.getElementById('bulkDeleteSearch').value.toLowerCase();
-                const guildFilter = document.getElementById('bulkDeleteGuildFilter').value;
-                
-                const filtered = users.filter(u => {
-                    const matchSearch = u.name.toLowerCase().includes(searchText);
-                    const matchGuild = !guildFilter || u.guild === guildFilter;
-                    return matchSearch && matchGuild;
-                });
-                
-                tbody.innerHTML = '';
-                filtered.forEach(u => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>
-                            <input type="checkbox" class="user-checkbox" data-username="${u.name}" 
-                                   style="width: 18px; height: 18px; cursor: pointer;">
-                        </td>
-                        <td><strong>${u.name}</strong></td>
-                        <td>${u.guild}</td>
-                        <td style="color: #3b82f6; font-weight: 600;">${u.power.toLocaleString()}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                
-                updateSelectedCount();
-            }
-            
-            // 선택된 개수 업데이트
-            function updateSelectedCount() {
-                const checkboxes = document.querySelectorAll('.user-checkbox:checked');
-                const count = checkboxes.length;
-                document.getElementById('selectedCount').innerHTML = 
-                    `선택: <strong style="color: #ef4444;">${count}</strong>명`;
-            }
-            
-            renderTable();
-            
-            // 검색 및 필터 이벤트
-            document.getElementById('bulkDeleteSearch').addEventListener('input', renderTable);
-            document.getElementById('bulkDeleteGuildFilter').addEventListener('change', renderTable);
-            
-            // 체크박스 변경 이벤트 (이벤트 위임)
-            document.getElementById('bulkDeleteTableBody').addEventListener('change', updateSelectedCount);
-            
-            // 전체 선택
-            document.getElementById('selectAllBtn').addEventListener('click', () => {
-                document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = true);
-                updateSelectedCount();
-            });
-            
-            // 전체 해제
-            document.getElementById('deselectAllBtn').addEventListener('click', () => {
-                document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
-                updateSelectedCount();
-            });
-            
-            // 일괄 삭제 실행
-            document.getElementById('executeBulkDelete').addEventListener('click', async (e) => {
-                // 버튼 비활성화 (중복 클릭 방지)
-                const btn = e.target;
-                if (btn.disabled) return;
-                
-                try {
-                    const selected = Array.from(document.querySelectorAll('.user-checkbox:checked'))
-                        .map(cb => cb.dataset.username);
-                    
-                    if (selected.length === 0) {
-                        showAlert('삭제할 사용자를 선택해주세요', 'error');
-                        return;
-                    }
-                    
-                    const reason = document.getElementById('bulkDeleteReason').value;
-                    const memo = document.getElementById('bulkDeleteMemo').value.trim();
-                    
-                    // 확인 (모달 유지)
-                    const confirmed = await showConfirm(
-                        '일괄 등록 해제 확인',
-                        `<span style="color:#ef4444; font-weight:600;">${selected.length}명의 사용자를 등록 해제하시겠습니까?</span><br><br>
-                        • 사용자 정보는 영구 보관됩니다<br>
-                        • 삭제된 사용자 목록에서 확인 가능<br>
-                        • 복구는 불가능합니다<br><br>
-                        <strong>선택된 사용자:</strong><br>
-                        ${selected.slice(0, 10).join(', ')}${selected.length > 10 ? '...' : ''}`,
-                        true  // 모달 유지
-                    );
-                    
-                    if (!confirmed) return;
-                    
-                    // 모달 제목 변경
-                    document.getElementById('modalTitle').textContent = '일괄 등록 해제 진행 중';
-                    document.getElementById('modalSubtitle').textContent = '잠시만 기다려주세요...';
-                    
-                    // 모달 내용을 프로그레스 바로 교체
-                    document.getElementById('modalBody').innerHTML = `
-                        <div style="padding: 20px 16px;">
-                            <div style="text-align: center; margin-bottom: 16px;">
-                                <strong style="font-size: 16px; color: #111827;">처리 중...</strong>
-                                <p style="margin-top: 6px; color: #6b7280; font-size: 13px;">
-                                    창을 닫지 마시고 기다려주세요
-                                </p>
-                            </div>
-                            
-                            <div style="margin-bottom: 12px;">
-                                <div style="background: #e5e7eb; height: 28px; border-radius: 14px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
-                                    <div id="progressBar" style="background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%); height: 100%; width: 0%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);">
-                                        <span id="progressPercent" style="color: white; font-weight: 700; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">0%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
-                                    <div>
-                                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 3px;">진행</div>
-                                        <div id="progressText" style="font-size: 16px; font-weight: 700; color: #111827;">0 / ${selected.length}</div>
-                                    </div>
-                                    <div>
-                                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 3px;">성공</div>
-                                        <div id="successCount" style="font-size: 16px; font-weight: 700; color: #10b981;">0</div>
-                                    </div>
-                                    <div>
-                                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 3px;">실패</div>
-                                        <div id="failCount" style="font-size: 16px; font-weight: 700; color: #ef4444;">0</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div id="currentUser" style="margin-top: 12px; text-align: center; font-size: 12px; color: #6b7280; min-height: 18px;">
-                                준비 중...
-                            </div>
-                        </div>
-                    `;
-                
-                
-                btn.disabled = true;
-                
-                let successCount = 0;
-                let failCount = 0;
-                
-                for (let i = 0; i < selected.length; i++) {
-                    const name = selected[i];
-                    
-                    // 현재 처리 중인 사용자 표시
-                    document.getElementById('currentUser').textContent = `처리 중: ${name}`;
-                    
-                    try {
-                        // 1. 사용자 정보 가져오기
-                        const userDoc = await getDoc(doc(db, "users", name));
-                        if (!userDoc.exists()) {
-                            failCount++;
-                            document.getElementById('failCount').textContent = failCount;
-                            continue;
-                        }
-                        
-                        const userData = userDoc.data();
-                        
-                        // 2. deletedUsers에 백업
-                        await setDoc(doc(collection(db, "deletedUsers")), {
-                            ...userData,
-                            deletedAt: Date.now(),
-                            deletedBy: 'admin',
-                            deleteReason: reason,
-                            deleteMemo: memo || '',
-                            originalName: name,
-                            deletedIp: await getIp(),
-                            deletedDevice: navigator.userAgent
-                        });
-                        
-                        // 3. users에서 삭제
-                        await deleteDoc(doc(db, "users", name));
-                        
-                        // 4. 로그 기록
-                        await setDoc(doc(collection(db, "logs")), {
-                            who: name,
-                            type: 'user_deleted',
-                            old_value: '사용자 존재',
-                            new_value: `일괄 등록 해제 (사유: ${reason})`,
-                            createdAt: Date.now(),
-                            ip: await getIp(),
-                            device: navigator.userAgent
-                        });
-                        
-                        successCount++;
-                        document.getElementById('successCount').textContent = successCount;
-                    } catch (e) {
-                        console.error(`Failed to delete ${name}:`, e);
-                        failCount++;
-                        document.getElementById('failCount').textContent = failCount;
-                    }
-                    
-                    // 진행 상황 업데이트 (실시간)
-                    const current = i + 1;
-                    const percent = Math.round((current / selected.length) * 100);
-                    document.getElementById('progressText').textContent = `${current} / ${selected.length}`;
-                    document.getElementById('progressBar').style.width = `${percent}%`;
-                    document.getElementById('progressPercent').textContent = `${percent}%`;
-                    
-                    // UI 업데이트를 위한 대기 (100ms로 증가)
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
-                
-                // 완료 표시
-                document.getElementById('modalTitle').textContent = '등록 해제 완료';
-                document.getElementById('modalSubtitle').textContent = '';
-                document.getElementById('currentUser').innerHTML = `
-                    <div style="text-align: center; padding: 16px;">
-                        <div style="font-size: 40px; margin-bottom: 12px;">${failCount === 0 ? '✅' : '⚠️'}</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 8px;">
-                            처리가 완료되었습니다
-                        </div>
-                        <div style="font-size: 13px; color: #6b7280;">
-                            성공: <strong style="color: #10b981;">${successCount}명</strong> / 
-                            실패: <strong style="color: #ef4444;">${failCount}명</strong>
-                        </div>
-                        <div style="margin-top: 12px; font-size: 12px; color: #9ca3af;">
-                            잠시 후 페이지가 새로고침됩니다...
-                        </div>
-                    </div>
-                `;
-                
-                // 2초 후 모달 닫기 및 페이지 새로고침
-                setTimeout(() => {
-                    closeModal();
-                    showAlert(
-                        `등록 해제 완료: 성공 ${successCount}명, 실패 ${failCount}명`,
-                        failCount === 0 ? 'success' : 'error'
-                    );
-                    setTimeout(() => location.reload(), 1000);
-                }, 2000);
-                } catch (error) {
-                    console.error('일괄 삭제 에러:', error);
-                    closeModal();
-                    btn.disabled = false;
-                    showAlert('처리 중 오류가 발생했습니다: ' + error.message, 'error');
-                }
-            });
-        });
-
-        // --- 공통: 인증 및 모달 ---
-        async function authenticateAndRun(name, callback) {
-            if (isSystemLocked() && !isAdmin) { 
-                const lockMsg = `관리자가 수정 잠금을 하여 수정이 불가능합니다.\n\n기간: ${formatKSTDateTime(lockStartTime)} ~ ${formatKSTDateTime(lockEndTime)} (KST)`;
-                showAlert(lockMsg, 'error'); 
-                return; 
-            }
-            const u = (await getDoc(doc(db, "users", name))).data();
-            document.getElementById('modalContent').classList.remove('modal-lg'); 
-            document.getElementById('modalFooter').style.display = 'flex';
-            if (!u.password) openPasswordSetupModal(name, u, callback); 
-            else openPasswordVerifyModal(name, u, callback);
-        }
-        
-        function handlePowerClick(name) { 
-            // 관리자는 비밀번호 확인 없이 바로 수정
-            if (isAdmin) {
-                getDoc(doc(db, "users", name)).then(snap => {
-                    if (snap.exists()) {
-                        openPowerEditModal(name, snap.data());
-                    }
-                });
-            } else {
-                authenticateAndRun(name, (u) => openPowerEditModal(name, u));
-            }
-        }
-
-        window.editUserFromInfo = async function(name) {
-            const docRef = doc(db, "users", name);
-            const snap = await getDoc(docRef);
-            if(!snap.exists()) return;
-            const u = snap.data();
-            
-            closeModal(); // 기존 모달 닫기
-            setTimeout(() => {
-                // 관리자는 비밀번호 확인 없이 바로 수정
-                if (isAdmin) {
-                    openUserEditModal(u);
-                } else {
-                    authenticateAndRun(name, (userData) => openUserEditModal(userData));
-                }
-            }, 300);
-        };
-        
-        function openPasswordSetupModal(name, u, cb) {
-            openSmallModal('비밀번호 설정', '4자리 숫자 비밀번호를 설정하세요', `<div class="form-group"><input type="password" class="form-input" id="passwordInput" maxlength="4" placeholder="4자리 숫자" inputmode="numeric"></div>`);
-            setTimeout(() => document.getElementById('passwordInput').focus(), 100);
-            document.getElementById('modalSubmit').onclick = async () => { 
-                const pw = document.getElementById('passwordInput').value; 
-                if(!/^\d{4}$/.test(pw)) { 
-                    showAlert('4자리 숫자를 입력하세요', 'error'); 
-                    return; 
-                }
-                await updateDoc(doc(db, "users", name), { password: pw }); 
-                closeModal(); 
-                setTimeout(() => cb(u), 500); 
-            };
-        }
-
-        function openPasswordVerifyModal(name, u, cb) {
-            let failCount = 0;
-            const maxAttempts = 5;
-            
-            openSmallModal('비밀번호 확인', '본인 확인을 위해 비밀번호를 입력하세요', `
-                <div class="form-group">
-                    <input type="password" class="form-input" id="passwordInput" maxlength="4" inputmode="numeric">
-                    <p id="attemptInfo" style="font-size: 12px; color: #6b7280; margin-top: 8px; text-align: center;">남은 시도 횟수: ${maxAttempts}회</p>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #374151;">
-                        <input type="checkbox" id="rememberPassword" style="width: 18px; height: 18px; cursor: pointer;">
-                        <span>비밀번호 저장 (자동 로그인)</span>
-                    </label>
-                    <p style="font-size: 11px; color: #9ca3af; margin-top: 4px; margin-left: 26px;">※ 브라우저 변경 시 자동 로그인이 해제됩니다</p>
-                </div>
-            `);
-            
-            setTimeout(() => document.getElementById('passwordInput').focus(), 100);
-            
-            document.getElementById('modalSubmit').onclick = () => { 
-                if (document.getElementById('passwordInput').value === u.password || isAdmin) {
-                    const rememberChecked = document.getElementById('rememberPassword').checked;
-                    
-                    // 로그인 성공
-                    loggedInUser = name;
-                    
-                    // 자동 로그인 저장 (체크된 경우)
-                    if (rememberChecked && !isAdmin) {
-                        localStorage.setItem('autoLogin', JSON.stringify({
-                            username: name,
-                            password: u.password,
-                            timestamp: Date.now()
-                        }));
-                    }
-                    
-                    closeModal(); 
-                    setTimeout(() => {
-                        loadData(); // 블러 해제를 위해 리로드
-                        cb(u);
-                    }, 200); 
-                } else {
-                    failCount++;
-                    const remaining = maxAttempts - failCount;
-                    
-                    if (failCount >= maxAttempts) {
-                        closeModal();
-                        setTimeout(() => {
-                            openSmallModal(
-                                '비밀번호 입력 제한', 
-                                '5회 이상 비밀번호를 틀렸습니다', 
-                                `
-                                <div style="text-align: center; padding: 20px;">
-                                    <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
-                                        비밀번호를 5회 이상 틀렸습니다.<br>
-                                        관리자에게 문의해주세요.
-                                    </p>
-                                    <a href="https://open.kakao.com/o/s3LUVM4h" target="_blank" 
-                                       style="display: inline-block; padding: 12px 24px; background: #FEE500; color: #000000; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.2s;">
-                                        📱 카카오톡 오픈채팅 바로가기
-                                    </a>
-                                </div>
-                                `
-                            );
-                            document.getElementById('modalFooter').style.display = 'none';
-                        }, 300);
-                        return;
-                    }
-                    
-                    document.getElementById('attemptInfo').textContent = `남은 시도 횟수: ${remaining}회`;
-                    document.getElementById('attemptInfo').style.color = remaining <= 2 ? '#ef4444' : '#6b7280';
-                    document.getElementById('passwordInput').value = '';
-                    document.getElementById('passwordInput').focus();
-                    showAlert(`비밀번호가 일치하지 않습니다 (${remaining}회 남음)`, 'error'); 
-                }
-            };
-        }
-
-        // --- 헬퍼 함수 ---
-        function openLargeModal(t, s) {
-            document.getElementById('modalContent').classList.add('modal-lg'); 
-            document.getElementById('modalTitle').textContent = t; 
-            document.getElementById('modalSubtitle').textContent = s;
-            document.getElementById('modalFooter').style.display = 'none'; 
-            document.getElementById('modalBody').innerHTML = '로딩중...'; 
-            document.getElementById('modalOverlay').classList.add('active');
-        }
-
-        function openSmallModal(t, s, b) {
-            document.getElementById('modalContent').classList.remove('modal-lg'); 
-            document.getElementById('modalTitle').textContent = t; 
-            document.getElementById('modalSubtitle').textContent = s;
-            document.getElementById('modalBody').innerHTML = b; 
-            document.getElementById('modalFooter').style.display = 'flex'; 
-            document.getElementById('modalOverlay').classList.add('active');
-        }
-
-        function setModalBody(h) { 
-            document.getElementById('modalBody').innerHTML = h + `<div style="text-align:right;margin-top:10px"><button class="btn btn-primary" onclick="closeModal()">닫기</button></div>`; 
-        }
-
-        window.closeModal = () => document.getElementById('modalOverlay').classList.remove('active');
-        
-        // 모달 오버레이 클릭 이벤트 제거 (밖 클릭해도 닫히지 않음)
-        // document.getElementById('modalOverlay').addEventListener('click', (e) => { 
-        //   if(e.target.id === 'modalOverlay') closeModal(); 
-        // });
-
-        // 커스텀 Confirm 모달
-        window.showConfirm = (title, message, keepOpen = false) => {
-            return new Promise((resolve) => {
-                openSmallModal(title, '', `<p style="text-align:center; padding:20px 0; font-size:15px; line-height:1.6; color:#374151;">${message}</p>`);
-                document.getElementById('modalFooter').innerHTML = `
-                    <button class="btn btn-cancel" onclick="window.confirmResolve(false)">취소</button>
-                    <button class="btn btn-primary" onclick="window.confirmResolve(true)">확인</button>
-                `;
-                window.confirmResolve = (result) => {
-                    if (!keepOpen || !result) {
-                        closeModal();
-                    }
-                    resolve(result);
-                    delete window.confirmResolve;
-                };
-            });
-        };
-
-        document.getElementById('searchInput').addEventListener('input', (e) => { 
-            const t = e.target.value.toLowerCase(); 
-            document.querySelectorAll('tbody tr').forEach(r => r.style.display = r.querySelector('.player-name').textContent.toLowerCase().includes(t)?'':'none'); 
-        });
-
-        function showAlert(m, t='success') { 
-            const a = document.createElement('div'); 
-            a.className = `alert alert-${t}`; 
-            a.innerHTML = `<div class="alert-title">${t==='success'?'성공':'알림'}</div><p class="alert-message" style="white-space: pre-line;">${m}</p>`; 
-            document.body.appendChild(a); 
-            setTimeout(() => a.remove(), 5000); 
-        }
-
-        async function initializeDatabase() { 
-            const uList = [
-                { guild: '사신', name: '갓명품', power: 1347941 }, 
-                { guild: '사신', name: '칼리', power: 1292531 }
-            ]; 
-            for (const u of uList) await setDoc(doc(db, "users", u.name), { 
-                ...u, 
-                password: null, 
-                shape_legend: 0, 
-                shape_myth: 0, 
-                mount_legend: 0, 
-                mount_myth: 0 
-            }); 
-            showAlert("초기 데이터 생성 완료", "success"); 
-            setTimeout(() => location.reload(), 1500); 
-        }
-
-        // --- 관리자 관리 기능 (최종 관리자 전용) ---
-        document.getElementById('adminManageBtn').addEventListener('click', async () => {
-            if (!isSuperAdmin) {
-                showAlert('최종 관리자만 접근할 수 있습니다', 'error');
-                return;
-            }
-
-            openLargeModal('관리자 관리', '일반 관리자 계정을 추가하거나 삭제합니다');
-            
-            // 관리자 목록 불러오기
-            const adminSnapshot = await getDocs(collection(db, "admins"));
-            
-            let adminListHtml = '';
-            if (adminSnapshot.empty) {
-                adminListHtml = '<p style="text-align:center; color:#9ca3af; padding:20px;">등록된 일반 관리자가 없습니다</p>';
-            } else {
-                adminListHtml = '<div class="table-scroll-container"><table class="common-table"><thead><tr><th>아이디</th><th>생성일</th><th>관리</th></tr></thead><tbody>';
-                adminSnapshot.forEach(docSnap => {
-                    const admin = docSnap.data();
-                    const createdAt = admin.createdAt ? formatDateTime(admin.createdAt) : '-';
-                    adminListHtml += `<tr>
-                        <td><strong>${docSnap.id}</strong></td>
-                        <td>${createdAt}</td>
-                        <td>
-                            <button class="btn btn-reset-pw" onclick="window.resetAdminPw('${docSnap.id}')" style="margin-right:4px;">비밀번호 초기화</button>
-                            <button class="btn btn-danger" onclick="window.deleteAdmin('${docSnap.id}')" style="padding:4px 8px; font-size:12px;">삭제</button>
-                        </td>
-                    </tr>`;
-                });
-                adminListHtml += '</tbody></table></div>';
-            }
-
-            const html = `
-                <div style="margin-bottom:20px; padding:15px; background:#f0fdf4; border-radius:8px; border-left:4px solid #22c55e;">
-                    <p style="font-size:13px; color:#166534;"><strong>👑 최종 관리자:</strong> tjdals9328 (변경 불가)</p>
-                </div>
-                
-                <h4 style="font-size:14px; font-weight:600; margin-bottom:12px; color:#374151;">📋 일반 관리자 목록</h4>
-                ${adminListHtml}
-                
-                <div style="margin-top:20px; padding-top:20px; border-top:1px solid #e5e7eb;">
-                    <h4 style="font-size:14px; font-weight:600; margin-bottom:12px; color:#374151;">➕ 새 관리자 추가</h4>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <input type="text" id="newAdminId" class="form-input" placeholder="아이디" style="flex:1; min-width:120px;">
-                        <input type="password" id="newAdminPw" class="form-input" placeholder="비밀번호" style="flex:1; min-width:120px;">
-                        <button class="btn btn-primary" onclick="window.addNewAdmin()" style="white-space:nowrap;">추가</button>
-                    </div>
-                    <p style="font-size:11px; color:#9ca3af; margin-top:8px;">※ 일반 관리자는 관리자 관리 기능을 사용할 수 없습니다</p>
-                </div>
-            `;
-
-            document.getElementById('modalBody').innerHTML = html + `<div style="text-align:right;margin-top:20px"><button class="btn btn-primary" onclick="closeModal()">닫기</button></div>`;
-        });
-
-        // 새 관리자 추가
-        window.addNewAdmin = async function() {
-            const adminId = document.getElementById('newAdminId').value.trim();
-            const adminPw = document.getElementById('newAdminPw').value;
-
-            if (!adminId || !adminPw) {
-                showAlert('아이디와 비밀번호를 입력하세요', 'error');
-                return;
-            }
-
-            if (adminPw.length < 4) {
-                showAlert('비밀번호는 4자 이상이어야 합니다', 'error');
-                return;
-            }
-
-            // 중복 체크
-            const existingAdmin = await getDoc(doc(db, "admins", adminId));
-            if (existingAdmin.exists()) {
-                showAlert('이미 존재하는 아이디입니다', 'error');
-                return;
-            }
-
-            try {
-                await setDoc(doc(db, "admins", adminId), {
-                    password: adminPw,
-                    createdAt: Date.now(),
-                    createdBy: 'superadmin'
-                });
-
-                await setDoc(doc(collection(db, "logs")), {
-                    who: 'SuperAdmin',
-                    type: 'admin_add',
-                    old_value: '-',
-                    new_value: `관리자 추가: ${adminId}`,
-                    createdAt: Date.now(),
-                    ip: await getIp()
-                });
-
-                showAlert(`관리자 [${adminId}]가 추가되었습니다`, 'success');
-                closeModal();
-                // 다시 열기
-                setTimeout(() => document.getElementById('adminManageBtn').click(), 300);
-            } catch (e) {
-                console.error(e);
-                showAlert('추가 중 오류가 발생했습니다', 'error');
-            }
-        };
-
-        // 관리자 삭제
-        window.deleteAdmin = async function(adminId) {
-            if (!await showConfirm('관리자 삭제', `[${adminId}] 관리자를 삭제하시겠습니까?`)) return;
-
-            try {
-                await deleteDoc(doc(db, "admins", adminId));
-
-                await setDoc(doc(collection(db, "logs")), {
-                    who: 'SuperAdmin',
-                    type: 'admin_delete',
-                    old_value: adminId,
-                    new_value: '삭제됨',
-                    createdAt: Date.now(),
-                    ip: await getIp()
-                });
-
-                showAlert(`관리자 [${adminId}]가 삭제되었습니다`, 'success');
-                closeModal();
-                setTimeout(() => document.getElementById('adminManageBtn').click(), 300);
-            } catch (e) {
-                console.error(e);
-                showAlert('삭제 중 오류가 발생했습니다', 'error');
-            }
-        };
-
-        // 관리자 비밀번호 초기화
-        window.resetAdminPw = async function(adminId) {
-            openSmallModal('비밀번호 초기화', `[${adminId}] 관리자`, `
-                <div class="form-group">
-                    <label class="form-label">새 비밀번호</label>
-                    <input type="password" id="resetPwInput" class="form-input" placeholder="새 비밀번호 입력">
-                </div>
-            `);
-
-            document.getElementById('modalSubmit').onclick = async () => {
-                const newPw = document.getElementById('resetPwInput').value;
-                
-                if (!newPw || newPw.length < 4) {
-                    showAlert('비밀번호는 4자 이상이어야 합니다', 'error');
-                    return;
-                }
-
-                try {
-                    await updateDoc(doc(db, "admins", adminId), {
-                        password: newPw,
-                        updatedAt: Date.now()
-                    });
-
-                    await setDoc(doc(collection(db, "logs")), {
-                        who: 'SuperAdmin',
-                        type: 'admin_pw_reset',
-                        old_value: adminId,
-                        new_value: '비밀번호 초기화',
-                        createdAt: Date.now(),
-                        ip: await getIp()
-                    });
-
-                    showAlert(`[${adminId}] 비밀번호가 초기화되었습니다`, 'success');
-                    closeModal();
-                } catch (e) {
-                    console.error(e);
-                    showAlert('오류가 발생했습니다', 'error');
-                }
-            };
-        };
-
-        init();
-    </script>
+        folder.appendChild(header);
+        folder.appendChild(body);
+        gridContainer.appendChild(folder);
+      });
+    }
+
+    renderCards(currentGame);
+  </script>
 </body>
 </html>
